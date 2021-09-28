@@ -22,6 +22,14 @@ public class UserMealWithExcess {
         this.userCalories = null;
     }
 
+    public UserMealWithExcess(LocalDateTime dateTime, String description, int calories, UserCalories userCalories) {
+        this.dateTime = dateTime;
+        this.description = description;
+        this.calories = calories;
+        this.userCalories = userCalories;
+        this.excess = false;
+    }
+
     @Override
     public String toString() {
         return "UserMealWithExcess{" +
