@@ -2,7 +2,12 @@ package ru.javawebinar.topjava.util;
 
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
+import ru.javawebinar.topjava.storage.StorageStrategy;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,6 +15,8 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class MealsUtil {
@@ -20,24 +27,59 @@ public class MealsUtil {
     }
 
     public static List<MealTo> getAllWithExcess(List<Meal> meals, int caloriesPerDay) {
-        return filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX, caloriesPerDay);
+        return getFilteredMealWithExcess(meals, meal -> true, caloriesPerDay);
     }
 
     public static List<MealTo> filteredByStreams(List<Meal> meals, LocalTime startTime,
                                                  LocalTime endTime, int caloriesPerDay) {
+        Predicate<Meal> mealFilter = meal -> TimeUtil.isBetweenHalfOpen(meal.getTime(), startTime, endTime);
+        return getFilteredMealWithExcess(meals, mealFilter, caloriesPerDay);
+    }
+
+    private static List<MealTo> getFilteredMealWithExcess(List<Meal> meals, Predicate<Meal> mealFilter,
+                                                          int caloriesPerDay) {
         Map<LocalDate, Integer> caloriesSumByDate = meals.stream()
                 .collect(
                         Collectors.groupingBy(Meal::getDate, Collectors.summingInt(Meal::getCalories))
                 );
 
         return meals.stream()
-                .filter(meal -> TimeUtil.isBetweenHalfOpen(meal.getTime(), startTime, endTime))
+                .filter(mealFilter)
                 .map(meal -> createTo(meal, caloriesSumByDate.get(meal.getDate()) > caloriesPerDay))
                 .collect(Collectors.toList());
     }
 
     private static MealTo createTo(Meal meal, boolean excess) {
-        return new MealTo(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
+        return new MealTo(meal.getId(), meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
+    }
+
+    public static StorageStrategy<Meal> getStorageStrategy() {
+        StorageStrategy<Meal> storageStrategy = null;
+        try {
+            Properties prop = new Properties();
+            InputStream inputStream = MealsUtil.class.getClassLoader().getResourceAsStream("/localstorage.properties");
+            prop.load(inputStream);
+            String storageClassName = prop.getProperty("mealstorageclassname");
+            Class<?> clazz = Class.forName(storageClassName);
+            Constructor<?> constructor = clazz.getConstructor();
+            storageStrategy = (StorageStrategy<Meal>) constructor.newInstance();
+            String profile = prop.getProperty("profile");
+            if (profile.equals("dev")){
+                initializeStorageData(storageStrategy);
+            }
+        } catch (IOException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+                | InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return storageStrategy;
+    }
+
+    private static void initializeStorageData(StorageStrategy<Meal> storageStrategy) {
+        List<Meal> initialMeals = getMealTestData();
+        initialMeals.forEach(meal -> meal.setId(storageStrategy.getNextId()));
+        storageStrategy.addAll(initialMeals);
     }
 
     public static List<Meal> getMealTestData() {
