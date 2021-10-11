@@ -1,10 +1,9 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
-import ru.javawebinar.topjava.dao.MealService;
-import ru.javawebinar.topjava.dao.impl.MealServiceImpl;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
+import ru.javawebinar.topjava.storage.StorageStrategy;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import javax.servlet.ServletException;
@@ -21,15 +20,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MealServlet extends HttpServlet {
 
     private static final Logger log = getLogger(UserServlet.class);
-    private final int MAX_CALORIES_PER_DAY = 2000;
-    private final String DATE_TIME_FORMAT_FOR_VIEW = "yyyy.MM.dd HH:mm";
-    private final String DATE_TIME_FORMAT_FROM_STORAGE = "yyyy-MM-dd'T'HH:mm";
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
-    private final MealService mealService;
+    private static final Integer MAX_CALORIES_PER_DAY = 2000;
+    private static final String DATE_TIME_PICKER_FORMAT = "Y-m-d H:i";
+    private static final String DATE_TIME_FORMAT_FOR_VIEW = "yyyy-MM-dd HH:mm";
+    private static final String DATE_TIME_FORMAT_FROM_STORAGE = "yyyy-MM-dd'T'HH:mm";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT_FOR_VIEW);
+    private StorageStrategy<Meal> mealStorage;
 
-    public MealServlet() {
-        super();
-        this.mealService = new MealServiceImpl(MealsUtil.getStorageStrategy());
+    @Override
+    public void init() throws ServletException {
+        this.mealStorage = MealsUtil.getStorageStrategy();
     }
 
     @Override
@@ -37,31 +37,40 @@ public class MealServlet extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         log.debug("redirect to meals/doGet");
+
         String forward;
         String action = request.getParameter("action");
         if (action == null) {
             action = "listMeals";
         }
 
-        if (action.equalsIgnoreCase("delete")) {
-            int mealId = Integer.parseInt(request.getParameter("mealId"));
-            mealService.deleteMeal(mealId);
-            forward = "/meals.jsp";
-            List<MealTo> mealsTo = MealsUtil.getAllWithExcess(mealService.getAllMeals(), MAX_CALORIES_PER_DAY);
-            request.setAttribute("userMeals", mealsTo);
-        } else if (action.equalsIgnoreCase("edit")) {
-            forward = "/meal.jsp";
-            int mealId = Integer.parseInt(request.getParameter("mealId"));
-            Meal meal = mealService.getMealById(mealId);
-            request.setAttribute("meal", meal);
-        } else if (action.equalsIgnoreCase("listMeals")) {
-            forward = "/meals.jsp";
-            List<MealTo> mealsTo = MealsUtil.getAllWithExcess(mealService.getAllMeals(), MAX_CALORIES_PER_DAY);
-            request.setAttribute("userMeals", mealsTo);
-        } else {
-            forward = "/meal.jsp";
+        switch (action) {
+            case "delete": {
+                int mealId = Integer.parseInt(request.getParameter("mealId"));
+                mealStorage.delete(mealId);
+                response.sendRedirect("meals");
+                return;
+            }
+            case "edit": {
+                forward = "/meal.jsp";
+                int mealId = Integer.parseInt(request.getParameter("mealId"));
+                Meal meal = mealStorage.getById(mealId);
+                request.setAttribute("meal", meal);
+                break;
+            }
+            case "listMeals": {
+                forward = "/meals.jsp";
+                List<MealTo> mealsTo = MealsUtil.getAllWithExcess(mealStorage.getAll(), MAX_CALORIES_PER_DAY);
+                request.setAttribute("userMeals", mealsTo);
+                break;
+            }
+            default: {
+                forward = "meals";
+            }
         }
+
         request.setAttribute("dateTimeFormatForView", DATE_TIME_FORMAT_FOR_VIEW);
+        request.setAttribute("dateTimePickerFormat", DATE_TIME_PICKER_FORMAT);
         request.setAttribute("dateTimeFormatFromStorage", DATE_TIME_FORMAT_FROM_STORAGE);
         request.getRequestDispatcher(forward).forward(request, response);
     }
@@ -70,26 +79,21 @@ public class MealServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         log.debug("redirect to meals/doPost");
+
         String description = request.getParameter("description");
         int calories = Integer.parseInt(request.getParameter("calories"));
-        log.debug("DateTime value: {}" ,request.getParameter("dateTime"));
-        LocalDateTime dateTime = LocalDateTime.parse(request.getParameter("dateTime"), dateTimeFormatter);
+        LocalDateTime dateTime = LocalDateTime.parse(request.getParameter("dateTime"), DATE_TIME_FORMATTER);
         Meal meal =  new Meal(dateTime, description, calories);
 
         String stringMealId = request.getParameter("mealId");
-
-        if (stringMealId == null || stringMealId.isEmpty()) {
-            mealService.addMeal(meal);
+       if (stringMealId == null || stringMealId.isEmpty()) {
+            mealStorage.add(meal);
         } else {
             int mealId = Integer.parseInt(stringMealId);
             meal.setId(mealId);
-            mealService.updateMeal(meal);
+            mealStorage.update(meal);
         }
 
-        List<MealTo> mealsTo = MealsUtil.getAllWithExcess(mealService.getAllMeals(), MAX_CALORIES_PER_DAY);
-        request.setAttribute("userMeals", mealsTo);
-        request.setAttribute("dateTimeFormatForView", DATE_TIME_FORMAT_FOR_VIEW);
-        request.setAttribute("dateTimeFormatFromStorage", DATE_TIME_FORMAT_FROM_STORAGE);
-        request.getRequestDispatcher("/meals.jsp").forward(request, response);
+        response.sendRedirect("meals");
     }
 }

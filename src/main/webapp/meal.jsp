@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<jsp:useBean id="now" class="java.util.Date" scope="page"/>
+<jsp:useBean id="now" class="java.util.Date"/>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -28,41 +28,6 @@
     <table>
         <tr>
             <td>
-                <label>
-                    ID :
-                </label>
-            </td>
-            <td>
-                <input type="text" readonly="readonly" name="mealId"
-                       value="<c:out value="${meal.id}" />"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label>
-                    Описание :
-                </label>
-            </td>
-            <td>
-                <input
-                        type="text" name="description"
-                        value="<c:out value="${meal.description}" />"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label>
-                    Каллории :
-                </label>
-            </td>
-            <td>
-                <input
-                        type="number" name="calories" step="1"
-                        value="<c:out value="${meal.calories}" />"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
                 <label for="datetimepicker">Дата : </label>
             </td>
             <td>
@@ -72,8 +37,25 @@
 <fmt:formatDate pattern="${dateTimeFormatForView}" value="${not empty parsedDateTime ? parsedDateTime : now}" />"/>
             </td>
         </tr>
+        <tr>
+            <td>
+                <label>Описание :</label>
+            </td>
+            <td>
+                <input type="text" name="description" value="${meal.description}"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Каллории :</label>
+            </td>
+            <td>
+                <input type="number" name="calories" step="1" value="${meal.calories}"/>
+            </td>
+        </tr>
     </table>
     <div>
+        <input type="hidden" readonly="readonly" name="mealId" value="${meal.id}" />
         <input type="submit" class="button" value="Сохранить"/>
         <input type="button" class="button" name="cancel" value="Отмена" onClick="window.location.href='meals';"/>
     </div>
@@ -84,7 +66,7 @@
 <script type="text/javascript">
     $(function () {
         $('#datetimepicker').datetimepicker({
-            format: 'Y.m.d H:i'
+            format: '${dateTimePickerFormat}'
         });
     });
 </script>

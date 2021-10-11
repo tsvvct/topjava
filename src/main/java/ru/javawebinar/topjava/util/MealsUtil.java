@@ -21,23 +21,23 @@ import java.util.stream.Collectors;
 
 public class MealsUtil {
     public static void main(String[] args) {
-        List<MealTo> mealsTo = filteredByStreams(getMealTestData(), LocalTime.of(7, 0),
+        List<MealTo> mealsTo = filteredWithExcess(getTestData(), LocalTime.of(7, 0),
                 LocalTime.of(12, 0), 2000);
         mealsTo.forEach(System.out::println);
     }
 
     public static List<MealTo> getAllWithExcess(List<Meal> meals, int caloriesPerDay) {
-        return getFilteredMealWithExcess(meals, meal -> true, caloriesPerDay);
+        return filteredWithExcess(meals, meal -> true, caloriesPerDay);
     }
 
-    public static List<MealTo> filteredByStreams(List<Meal> meals, LocalTime startTime,
-                                                 LocalTime endTime, int caloriesPerDay) {
+    public static List<MealTo> filteredWithExcess(List<Meal> meals, LocalTime startTime,
+                                                  LocalTime endTime, int caloriesPerDay) {
         Predicate<Meal> mealFilter = meal -> TimeUtil.isBetweenHalfOpen(meal.getTime(), startTime, endTime);
-        return getFilteredMealWithExcess(meals, mealFilter, caloriesPerDay);
+        return filteredWithExcess(meals, mealFilter, caloriesPerDay);
     }
 
-    private static List<MealTo> getFilteredMealWithExcess(List<Meal> meals, Predicate<Meal> mealFilter,
-                                                          int caloriesPerDay) {
+    private static List<MealTo> filteredWithExcess(List<Meal> meals, Predicate<Meal> mealFilter,
+                                                   int caloriesPerDay) {
         Map<LocalDate, Integer> caloriesSumByDate = meals.stream()
                 .collect(
                         Collectors.groupingBy(Meal::getDate, Collectors.summingInt(Meal::getCalories))
@@ -54,7 +54,7 @@ public class MealsUtil {
     }
 
     public static StorageStrategy<Meal> getStorageStrategy() {
-        StorageStrategy<Meal> storageStrategy = null;
+        StorageStrategy<Meal> storageStrategy;
         try {
             Properties prop = new Properties();
             InputStream inputStream = MealsUtil.class.getClassLoader().getResourceAsStream("/localstorage.properties");
@@ -77,12 +77,11 @@ public class MealsUtil {
     }
 
     private static void initializeStorageData(StorageStrategy<Meal> storageStrategy) {
-        List<Meal> initialMeals = getMealTestData();
-        initialMeals.forEach(meal -> meal.setId(storageStrategy.getNextId()));
-        storageStrategy.addAll(initialMeals);
+        List<Meal> initialMeals = getTestData();
+        initialMeals.forEach(storageStrategy::add);
     }
 
-    public static List<Meal> getMealTestData() {
+    public static List<Meal> getTestData() {
         return Arrays.asList(
                 new Meal(LocalDateTime.of(2020, Month.JANUARY, 28, 10, 20), "Завтрак", 500),
                 new Meal(LocalDateTime.of(2020, Month.JANUARY, 28, 10, 50), "Кофе с собой", 100),

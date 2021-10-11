@@ -27,28 +27,22 @@
 <table border=1>
     <thead>
     <tr>
-        <th>№</th>
+        <th>Дата/Время</th>
         <th>Описание</th>
         <th>Каллории</th>
-        <th>ДатаВремя</th>
-        <th colspan=2>Действие</th>
+        <th colspan=2>Действия</th>
     </tr>
     </thead>
     <tbody>
     <c:forEach items="${userMeals}" var="mealTo">
-        <c:set var="className" scope="page" value="normal"/>
-        <c:if test="${mealTo.excess}">
-            <c:set var="className" scope="page" value="excess"/>
-        </c:if>
-        <tr class="<c:out value="${mealTo.excess ? 'excess' : 'normal'}"/>">
-            <td><c:out value="${mealTo.id}"/></td>
-            <td><c:out value="${mealTo.description}"/></td>
-            <td><c:out value="${mealTo.calories}"/></td>
+        <tr class="${mealTo.excess ? 'excess' : 'normal'}">
             <td><fmt:parseDate value="${mealTo.dateTime}" pattern="${dateTimeFormatFromStorage}" var="parsedDateTime"
                                type="both"/>
-                <fmt:formatDate pattern="${dateTimeFormatForView}" value="${ parsedDateTime }"/></td>
-            <td><a href="meals?action=edit&mealId=<c:out value="${mealTo.id}"/>">Обновить</a></td>
-            <td><a href="meals?action=delete&mealId=<c:out value="${mealTo.id}"/>">Удалить</a></td>
+                <fmt:formatDate pattern="${dateTimeFormatForView}" value="${parsedDateTime}"/></td>
+            <td>${mealTo.description}</td>
+            <td>${mealTo.calories}</td>
+            <td><a href="meals?action=edit&mealId=${mealTo.id}">Обновить</a></td>
+            <td><a href="meals?action=delete&mealId=${mealTo.id}">Удалить</a></td>
         </tr>
     </c:forEach>
     </tbody>

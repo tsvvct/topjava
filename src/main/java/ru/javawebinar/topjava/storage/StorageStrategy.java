@@ -13,7 +13,5 @@ public interface StorageStrategy<T> {
 
     void add(T item);
 
-    void addAll(List<T> items);
-
     int getNextId();
 }
