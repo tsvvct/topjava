@@ -3,8 +3,9 @@ package ru.javawebinar.topjava.web;
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
-import ru.javawebinar.topjava.storage.StorageStrategy;
+import ru.javawebinar.topjava.dao.MealService;
 import ru.javawebinar.topjava.util.MealsUtil;
+import ru.javawebinar.topjava.util.ServletUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -12,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -20,16 +20,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MealServlet extends HttpServlet {
 
     private static final Logger log = getLogger(UserServlet.class);
-    private static final Integer MAX_CALORIES_PER_DAY = 2000;
-    private static final String DATE_TIME_PICKER_FORMAT = "Y-m-d H:i";
-    private static final String DATE_TIME_FORMAT_FOR_VIEW = "yyyy-MM-dd HH:mm";
-    private static final String DATE_TIME_FORMAT_FROM_STORAGE = "yyyy-MM-dd'T'HH:mm";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT_FOR_VIEW);
-    private StorageStrategy<Meal> mealStorage;
+    private static final Integer maxCaloriesPerDay = 2000;
+
+    private MealService mealService;
 
     @Override
     public void init() throws ServletException {
-        this.mealStorage = MealsUtil.getStorageStrategy();
+        this.mealService = MealsUtil.getStorageStrategy();
     }
 
     @Override
@@ -39,39 +36,44 @@ public class MealServlet extends HttpServlet {
         log.debug("redirect to meals/doGet");
 
         String forward;
-        String action = request.getParameter("action");
-        if (action == null) {
-            action = "listMeals";
-        }
+        Action action = Action.getOrDefault(request.getParameter("action"));
+        log.debug("    action: {}", action);
 
         switch (action) {
-            case "delete": {
-                int mealId = Integer.parseInt(request.getParameter("mealId"));
-                mealStorage.delete(mealId);
-                response.sendRedirect("meals");
-                return;
-            }
-            case "edit": {
+            case CREATE: {
                 forward = "/meal.jsp";
-                int mealId = Integer.parseInt(request.getParameter("mealId"));
-                Meal meal = mealStorage.getById(mealId);
-                request.setAttribute("meal", meal);
                 break;
             }
-            case "listMeals": {
+            case LIST: {
                 forward = "/meals.jsp";
-                List<MealTo> mealsTo = MealsUtil.getAllWithExcess(mealStorage.getAll(), MAX_CALORIES_PER_DAY);
+                List<MealTo> mealsTo = MealsUtil.getAllWithExcess(mealService.getAll(), maxCaloriesPerDay);
                 request.setAttribute("userMeals", mealsTo);
                 break;
             }
-            default: {
+            case UPDATE: {
+                forward = "/meal.jsp";
+                Meal meal = mealService.getById(parseId(request));
+                request.setAttribute("meal", meal);
+                break;
+            }
+            case DELETE: {
+                mealService.delete(parseId(request));
+                log.debug("    meal with id: {} removed", parseId(request));
                 forward = "meals";
+                log.debug("    redirect to: {}", forward);
+                response.sendRedirect(forward);
+                return;
+            }
+            default: {
+                log.debug("Such action: {} isn't supported.", request.getParameter("action"));
+                throw new ServletException("Such action: " + request.getParameter("action") + " isn't supported.");
             }
         }
 
-        request.setAttribute("dateTimeFormatForView", DATE_TIME_FORMAT_FOR_VIEW);
-        request.setAttribute("dateTimePickerFormat", DATE_TIME_PICKER_FORMAT);
-        request.setAttribute("dateTimeFormatFromStorage", DATE_TIME_FORMAT_FROM_STORAGE);
+        request.setAttribute("dateTimeFormatForView", ServletUtil.DATE_TIME_FORMAT_FOR_VIEW);
+        request.setAttribute("dateTimePickerFormat", ServletUtil.DATE_TIME_PICKER_FORMAT);
+        request.setAttribute("dateTimeFormatFromStorage", ServletUtil.DATE_TIME_FORMAT_FROM_STORAGE);
+        log.debug("    forward to: {}", forward);
         request.getRequestDispatcher(forward).forward(request, response);
     }
 
@@ -82,18 +84,24 @@ public class MealServlet extends HttpServlet {
 
         String description = request.getParameter("description");
         int calories = Integer.parseInt(request.getParameter("calories"));
-        LocalDateTime dateTime = LocalDateTime.parse(request.getParameter("dateTime"), DATE_TIME_FORMATTER);
+        LocalDateTime dateTime = LocalDateTime.parse(request.getParameter("dateTime"), ServletUtil.DATE_TIME_FORMATTER);
         Meal meal =  new Meal(dateTime, description, calories);
 
         String stringMealId = request.getParameter("mealId");
        if (stringMealId == null || stringMealId.isEmpty()) {
-            mealStorage.add(meal);
+            mealService.add(meal);
+            log.debug("    meal created: {}", meal);
         } else {
-            int mealId = Integer.parseInt(stringMealId);
-            meal.setId(mealId);
-            mealStorage.update(meal);
+            meal.setId(parseId(request));
+            mealService.update(meal);
+            log.debug("    meal updated: {}", meal);
         }
 
+       log.debug("    redirect to: {}", "meals");
         response.sendRedirect("meals");
+    }
+
+    private int parseId(HttpServletRequest request) {
+        return Integer.parseInt(request.getParameter("mealId"));
     }
 }

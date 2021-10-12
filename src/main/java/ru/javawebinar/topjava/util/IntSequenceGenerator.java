@@ -1,8 +1,8 @@
-package ru.javawebinar.topjava.storage;
+package ru.javawebinar.topjava.util;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class IntSequenceGenerator implements SequenceGenerator<Integer> {
+public class IntSequenceGenerator {
 
     private final AtomicInteger value;
 
@@ -10,7 +10,6 @@ public class IntSequenceGenerator implements SequenceGenerator<Integer> {
          this.value = new AtomicInteger(0);
     }
 
-    @Override
     public Integer getNext() {
         return value.getAndIncrement();
     }

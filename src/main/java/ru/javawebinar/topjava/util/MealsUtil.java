@@ -2,7 +2,7 @@ package ru.javawebinar.topjava.util;
 
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
-import ru.javawebinar.topjava.storage.StorageStrategy;
+import ru.javawebinar.topjava.dao.MealService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,8 +53,8 @@ public class MealsUtil {
         return new MealTo(meal.getId(), meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
     }
 
-    public static StorageStrategy<Meal> getStorageStrategy() {
-        StorageStrategy<Meal> storageStrategy;
+    public static MealService getStorageStrategy() {
+        MealService mealService;
         try {
             Properties prop = new Properties();
             InputStream inputStream = MealsUtil.class.getClassLoader().getResourceAsStream("/localstorage.properties");
@@ -62,10 +62,10 @@ public class MealsUtil {
             String storageClassName = prop.getProperty("mealstorageclassname");
             Class<?> clazz = Class.forName(storageClassName);
             Constructor<?> constructor = clazz.getConstructor();
-            storageStrategy = (StorageStrategy<Meal>) constructor.newInstance();
+            mealService = (MealService) constructor.newInstance();
             String profile = prop.getProperty("profile");
             if (profile.equals("dev")){
-                initializeStorageData(storageStrategy);
+                initializeStorageData(mealService);
             }
         } catch (IOException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException
                 | InstantiationException | IllegalAccessException e) {
@@ -73,12 +73,12 @@ public class MealsUtil {
             return null;
         }
 
-        return storageStrategy;
+        return mealService;
     }
 
-    private static void initializeStorageData(StorageStrategy<Meal> storageStrategy) {
+    private static void initializeStorageData(MealService mealService) {
         List<Meal> initialMeals = getTestData();
-        initialMeals.forEach(storageStrategy::add);
+        initialMeals.forEach(mealService::add);
     }
 
     public static List<Meal> getTestData() {

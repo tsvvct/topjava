@@ -23,7 +23,7 @@
 <h3><a href="index.html">Home</a></h3>
 <hr>
 <h2>Meals</h2>
-<p><a href="meals?action=insert">Добавить</a></p>
+<p><a href="meals?action=create">Добавить</a></p>
 <table border=1>
     <thead>
     <tr>
@@ -41,7 +41,7 @@
                 <fmt:formatDate pattern="${dateTimeFormatForView}" value="${parsedDateTime}"/></td>
             <td>${mealTo.description}</td>
             <td>${mealTo.calories}</td>
-            <td><a href="meals?action=edit&mealId=${mealTo.id}">Обновить</a></td>
+            <td><a href="meals?action=update&mealId=${mealTo.id}">Обновить</a></td>
             <td><a href="meals?action=delete&mealId=${mealTo.id}">Удалить</a></td>
         </tr>
     </c:forEach>
