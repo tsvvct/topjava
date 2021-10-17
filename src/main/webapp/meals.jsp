@@ -14,12 +14,49 @@
         .excess {
             color: red;
         }
+
+        dl {
+            background: none repeat scroll 0 0 #FAFAFA;
+            margin: 8px 0;
+            padding: 0;
+        }
+
+        dt {
+            display: inline-block;
+            width: 170px;
+        }
+
+        dd {
+            display: inline-block;
+            margin-left: 8px;
+            vertical-align: top;
+        }
     </style>
 </head>
 <body>
 <section>
-    <h3><a href="index.html">Home</a></h3>
+    <h3><a href="index.jsp">Home</a></h3>
     <hr/>
+    <form method="post" action="meals">
+        <input type="hidden" name="isFilterSubmit" value="">
+        <dl>
+            <dt>Date from:</dt>
+            <dd><input type="date" value="${dateFrom}" name="dateFrom"></dd>
+        </dl>
+        <dl>
+            <dt>Date to:</dt>
+            <dd><input type="date" value="${dateTo}" name="dateTo"></dd>
+        </dl>
+        <dl>
+            <dt>Time from</dt>
+            <dd><input type="time" value="${timeFrom}" name="timeFrom"></dd>
+        </dl>
+        <dl>
+            <dt>Time to</dt>
+            <dd><input type="time" value="${timeTo}" name="timeTo"></dd>
+        </dl>
+        <button type="submit">Filter</button>
+    </form>
     <h2>Meals</h2>
     <a href="meals?action=create">Add Meal</a>
     <br><br>

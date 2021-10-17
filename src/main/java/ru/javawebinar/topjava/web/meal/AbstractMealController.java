@@ -7,6 +7,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
@@ -17,9 +18,9 @@ public abstract class AbstractMealController {
     @Autowired
     private MealService service;
 
-    public List<Meal> getAll(int userId) {
+    public List<Meal> getAll(int userId, Predicate<Meal> filter) {
         log.info("getAll");
-        return service.getAll(userId);
+        return service.getAll(userId, filter);
     }
 
     public Meal get(int id, int userId) {

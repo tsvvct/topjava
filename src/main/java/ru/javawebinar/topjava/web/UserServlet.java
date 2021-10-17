@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.slf4j.LoggerFactory.getLogger;
+import static ru.javawebinar.topjava.web.SecurityUtil.setAuthUserId;
 
 public class UserServlet extends HttpServlet {
     private static final Logger log = getLogger(UserServlet.class);
@@ -17,5 +18,13 @@ public class UserServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         log.debug("forward to users");
         request.getRequestDispatcher("/users.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        setAuthUserId(Integer.parseInt(request.getParameter("authUser")));
+        request.getSession().invalidate();
+        response.sendRedirect("index.jsp");
     }
 }

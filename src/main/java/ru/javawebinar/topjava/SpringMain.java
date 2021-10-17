@@ -11,6 +11,7 @@ import ru.javawebinar.topjava.web.meal.MealRestController;
 import ru.javawebinar.topjava.web.user.AdminRestController;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 public class SpringMain {
     public static void main(String[] args) {
@@ -60,15 +61,16 @@ public class SpringMain {
             System.out.println("test mealRestController");
             System.out.println("test create method");
             System.out.println("=========================================================");
-            mealRestController.getAll(userOne.getId()).forEach(System.out::println);
+            Predicate<Meal> filter = meal -> true;
+            mealRestController.getAll(userOne.getId(), filter).forEach(System.out::println);
             mealRestController.create(MealsUtil.meals.get(0), userOne.getId());
             mealRestController.create(MealsUtil.meals.get(1), userOne.getId());
-            mealRestController.getAll(userOne.getId()).forEach(System.out::println);
+            mealRestController.getAll(userOne.getId(), filter).forEach(System.out::println);
 
-            mealRestController.getAll(userTwo.getId()).forEach(System.out::println);
+            mealRestController.getAll(userTwo.getId(), filter).forEach(System.out::println);
             mealRestController.create(MealsUtil.meals.get(2), userTwo.getId());
             mealRestController.create(MealsUtil.meals.get(3), userTwo.getId());
-            mealRestController.getAll(userTwo.getId()).forEach(System.out::println);
+            mealRestController.getAll(userTwo.getId(), filter).forEach(System.out::println);
             System.out.println("=========================================================");
             System.out.println("test get, update, delete methods");
             System.out.println("=========================================================");
@@ -80,7 +82,7 @@ public class SpringMain {
             mealRestController.update(newMealOne, mealOne.getId(), userOne.getId());
 
             mealRestController.delete(newMealOne.getId(), userOne.getId());
-            mealRestController.getAll(userOne.getId()).forEach(System.out::println);
+            mealRestController.getAll(userOne.getId(), filter).forEach(System.out::println);
 
             try {
                 mealRestController.get(0, userTwo.getId());
