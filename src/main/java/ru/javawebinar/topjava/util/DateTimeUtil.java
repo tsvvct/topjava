@@ -3,9 +3,11 @@ package ru.javawebinar.topjava.util;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -54,8 +56,29 @@ public class DateTimeUtil {
         return lt.compareTo(startTime) >= 0 && lt.compareTo(endTime) < 0;
     }
 
+    public static LocalDate parseDate(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value);
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
+}
+
+    public static LocalTime parseTime(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(value);
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
+    }
+
     public static String toString(LocalDateTime ldt) {
         return ldt == null ? "" : ldt.format(DATE_TIME_FORMATTER);
     }
 }
-

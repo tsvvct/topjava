@@ -37,23 +37,22 @@
 <section>
     <h3><a href="index.jsp">Home</a></h3>
     <hr/>
-    <form method="post" action="meals">
-        <input type="hidden" name="isFilterSubmit" value="">
+    <form method="get" action="meals">
         <dl>
             <dt>Date from:</dt>
-            <dd><input type="date" value="${dateFrom}" name="dateFrom"></dd>
+            <dd><input type="date" value="${fn:parseDate(param.dateFrom)}" name="dateFrom"></dd>
         </dl>
         <dl>
             <dt>Date to:</dt>
-            <dd><input type="date" value="${dateTo}" name="dateTo"></dd>
+            <dd><input type="date" value="${fn:parseDate(param.dateTo)}" name="dateTo"></dd>
         </dl>
         <dl>
             <dt>Time from</dt>
-            <dd><input type="time" value="${timeFrom}" name="timeFrom"></dd>
+            <dd><input type="time" value="${fn:parseTime(param.timeFrom)}" name="timeFrom"></dd>
         </dl>
         <dl>
             <dt>Time to</dt>
-            <dd><input type="time" value="${timeTo}" name="timeTo"></dd>
+            <dd><input type="time" value="${fn:parseTime(param.timeTo)}" name="timeTo"></dd>
         </dl>
         <button type="submit">Filter</button>
     </form>

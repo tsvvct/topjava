@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.repository;
 
 import ru.javawebinar.topjava.model.Meal;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -17,4 +18,7 @@ public interface MealRepository {
 
     // ORDERED dateTime desc
     List<Meal> getAll(int userId, Predicate<Meal> filter);
+
+    // ORDERED dateTime desc
+    List<Meal> getAll(int userId, LocalDate dateFrom, LocalDate dateTo);
 }

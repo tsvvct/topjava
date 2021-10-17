@@ -12,7 +12,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -32,7 +31,11 @@ public class MealServlet extends HttpServlet {
         repository = appCtx.getBean(MealRestController.class);
         // initialize meal repository with test data for different users
         Function<Meal, Integer> userIdSelector = meal -> (MealsUtil.meals.indexOf(meal) < 8) ? 1 : 2;
-        MealsUtil.meals.forEach(meal -> repository.create(meal, userIdSelector.apply(meal)));
+        MealsUtil.meals.forEach(meal -> {
+            SecurityUtil.setAuthUserId(userIdSelector.apply(meal));
+            repository.create(meal);
+        });
+        SecurityUtil.setAuthUserId(1);
     }
 
     @Override
@@ -43,20 +46,16 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        String isFilter = request.getParameter("isFilterSubmit");
-        if (isFilter != null) {
-            saveFilterToSession(request);
-        } else {
-            String id = request.getParameter("id");
 
-            Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
-                    LocalDateTime.parse(request.getParameter("dateTime")),
-                    request.getParameter("description"),
-                    Integer.parseInt(request.getParameter("calories")));
+        String id = request.getParameter("id");
 
-            log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-            repository.save(meal);
-        }
+        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+                LocalDateTime.parse(request.getParameter("dateTime")),
+                request.getParameter("description"),
+                Integer.parseInt(request.getParameter("calories")));
+
+        log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
+        repository.save(meal, getId(request));
 
         response.sendRedirect("meals");
     }
@@ -83,9 +82,9 @@ public class MealServlet extends HttpServlet {
             case "all":
             default:
                 log.info("getAll");
-                request.setAttribute("meals", repository.getAll(getAttributeOrDefault(request, "dateFrom"),
-                        getAttributeOrDefault(request, "dateTo"), getAttributeOrDefault(request, "timeFrom"),
-                        getAttributeOrDefault(request, "timeTo")));
+                request.setAttribute("meals", repository.getAll(getParameterOrDefault(request, "dateFrom"),
+                        getParameterOrDefault(request, "dateTo"), getParameterOrDefault(request, "timeFrom"),
+                        getParameterOrDefault(request, "timeTo")));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
@@ -96,22 +95,14 @@ public class MealServlet extends HttpServlet {
         return Integer.parseInt(paramId);
     }
 
-    private void saveFilterToSession(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        session.setAttribute("dateFrom", request.getParameter("dateFrom"));
-        session.setAttribute("dateTo", request.getParameter("dateTo"));
-        session.setAttribute("timeFrom", request.getParameter("timeFrom"));
-        session.setAttribute("timeTo", request.getParameter("timeTo"));
-    }
+    private String getParameterOrDefault(HttpServletRequest request, String name) {
 
-    private String getAttributeOrDefault(HttpServletRequest request, String name) {
-        HttpSession session = request.getSession();
-        String sessionAttribute = (String) session.getAttribute(name);
+        String requestParameter = request.getParameter(name);
 
-        if (sessionAttribute == null) {
-            sessionAttribute = "";
+        if (requestParameter == null) {
+            requestParameter = "";
         }
 
-        return sessionAttribute;
+        return requestParameter;
     }
 }

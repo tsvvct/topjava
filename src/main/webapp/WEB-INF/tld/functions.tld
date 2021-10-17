@@ -13,4 +13,16 @@
         <function-class>ru.javawebinar.topjava.util.DateTimeUtil</function-class>
         <function-signature>java.lang.String toString(java.time.LocalDateTime)</function-signature>
     </function>
+
+    <function>
+        <name>parseDate</name>
+        <function-class>ru.javawebinar.topjava.util.DateTimeUtil</function-class>
+        <function-signature>java.time.LocalDate parseDate(java.lang.String)</function-signature>
+    </function>
+
+    <function>
+        <name>parseTime</name>
+        <function-class>ru.javawebinar.topjava.util.DateTimeUtil</function-class>
+        <function-signature>java.time.LocalTime parseTime(java.lang.String)</function-signature>
+    </function>
 </taglib>
