@@ -21,7 +21,7 @@ import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 
 @Controller
 public class MealRestController {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final MealService service;
 
@@ -30,30 +30,21 @@ public class MealRestController {
     }
 
     public List<MealTo> getAll() {
-        return MealsUtil.getTos(service.getAll(authUserId(), meal -> true),
+        return MealsUtil.getTos(service.getAll(authUserId()),
                 MealsUtil.DEFAULT_CALORIES_PER_DAY);
     }
 
     public List<MealTo> getAll(String dateFrom, String dateTo, String timeFrom, String timeTo) {
-        Predicate<Meal> dateFilter = getValueFilter(Meal::getDate, parseOrNull(LocalDate::parse, dateFrom),
-                parseOrNull(LocalDate::parse, dateTo), true, true);
         Predicate<Meal> timeFilter = getValueFilter(Meal::getTime, parseOrNull(LocalTime::parse, timeFrom),
                 parseOrNull(LocalTime::parse, timeTo), true, false);
-        return MealsUtil.filterByPredicate(service.getAll(authUserId(), dateFilter),
-                MealsUtil.DEFAULT_CALORIES_PER_DAY, timeFilter);
+        List<Meal> filteredMeals = service.getAll(authUserId(), parseOrNull(LocalDate::parse, dateFrom),
+                parseOrNull(LocalDate::parse, dateTo));
+        return MealsUtil.filterByPredicate(filteredMeals, MealsUtil.DEFAULT_CALORIES_PER_DAY, timeFilter);
     }
 
     public Meal get(int id) {
         log.info("get {}", id);
         return service.get(id, authUserId());
-    }
-
-    public Meal save(Meal meal, int id) {
-        if (meal.isNew()) {
-            return create(meal);
-        } else {
-            return update(meal, id);
-        }
     }
 
     public Meal create(Meal meal) {

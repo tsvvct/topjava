@@ -15,11 +15,7 @@ public class DateTimeUtil {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public static <T> T parseOrNull(Function<String, T> parser, String value) {
-        if (value.isEmpty()) {
-            return null;
-        } else {
-            return parser.apply(value);
-        }
+        return (value.isEmpty()) ? null : parser.apply(value);
     }
 
     public static <T, R extends Comparable<R>> Predicate<T> getValueFilter(@NonNull Function<T, R> getValueFunction,
@@ -65,7 +61,7 @@ public class DateTimeUtil {
         } catch (DateTimeParseException ex) {
             return null;
         }
-}
+    }
 
     public static LocalTime parseTime(String value) {
         if (value == null) {

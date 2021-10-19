@@ -22,14 +22,14 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-        synchronized (meal) {
-            if (meal.isNew()) {
-                meal.setId(counter.incrementAndGet());
-                getUserMealRepository(userId).put(meal.getId(), meal);
-                return meal;
-            }
-            return getUserMealRepository(userId).computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
+
+        if (meal.isNew()) {
+            meal.setId(counter.incrementAndGet());
+            getUserMealRepository(userId).put(meal.getId(), meal);
+            return meal;
         }
+        return getUserMealRepository(userId).computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
+
     }
 
     @Override
@@ -43,7 +43,11 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public List<Meal> getAll(int userId, Predicate<Meal> filter) {
+    public List<Meal> getAll(int userId) {
+        return getAll(userId, meal -> true);
+    }
+
+    private List<Meal> getAll(int userId, Predicate<Meal> filter) {
         return getUserMealRepository(userId).values().stream()
                 .filter(filter)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())

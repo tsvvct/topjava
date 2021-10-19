@@ -21,19 +21,19 @@ import java.util.function.Function;
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
 
-    private MealRestController repository;
+    private MealRestController controller;
 
     private ConfigurableApplicationContext appCtx;
 
     @Override
     public void init() {
         appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
-        repository = appCtx.getBean(MealRestController.class);
+        controller = appCtx.getBean(MealRestController.class);
         // initialize meal repository with test data for different users
         Function<Meal, Integer> userIdSelector = meal -> (MealsUtil.meals.indexOf(meal) < 8) ? 1 : 2;
         MealsUtil.meals.forEach(meal -> {
             SecurityUtil.setAuthUserId(userIdSelector.apply(meal));
-            repository.create(meal);
+            controller.create(meal);
         });
         SecurityUtil.setAuthUserId(1);
     }
@@ -55,7 +55,12 @@ public class MealServlet extends HttpServlet {
                 Integer.parseInt(request.getParameter("calories")));
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        repository.save(meal, getId(request));
+
+        if (meal.isNew()) {
+            controller.create(meal);
+        } else {
+            controller.update(meal, getId(request));
+        }
 
         response.sendRedirect("meals");
     }
@@ -68,21 +73,21 @@ public class MealServlet extends HttpServlet {
             case "delete":
                 int id = getId(request);
                 log.info("Delete {}", id);
-                repository.delete(id);
+                controller.delete(id);
                 response.sendRedirect("meals");
                 break;
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
                         new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
-                        repository.get(getId(request));
+                        controller.get(getId(request));
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
             case "all":
             default:
                 log.info("getAll");
-                request.setAttribute("meals", repository.getAll(getParameterOrDefault(request, "dateFrom"),
+                request.setAttribute("meals", controller.getAll(getParameterOrDefault(request, "dateFrom"),
                         getParameterOrDefault(request, "dateTo"), getParameterOrDefault(request, "timeFrom"),
                         getParameterOrDefault(request, "timeTo")));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
@@ -98,11 +103,7 @@ public class MealServlet extends HttpServlet {
     private String getParameterOrDefault(HttpServletRequest request, String name) {
 
         String requestParameter = request.getParameter(name);
+        return (requestParameter != null) ? requestParameter : "";
 
-        if (requestParameter == null) {
-            requestParameter = "";
-        }
-
-        return requestParameter;
     }
 }
