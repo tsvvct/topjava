@@ -22,14 +22,12 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             getUserMealRepository(userId).put(meal.getId(), meal);
             return meal;
         }
         return getUserMealRepository(userId).computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
-
     }
 
     @Override
@@ -60,6 +58,6 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     private Map<Integer, Meal> getUserMealRepository(int id) {
-        return repository.computeIfAbsent(id, ConcurrentHashMap::new);
+        return repository.computeIfAbsent(id, idParam -> new ConcurrentHashMap<>());
     }
 }
