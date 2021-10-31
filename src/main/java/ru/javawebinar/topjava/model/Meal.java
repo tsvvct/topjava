@@ -12,7 +12,7 @@ import java.time.LocalTime;
 import static javax.persistence.ConstraintMode.CONSTRAINT;
 
 @Entity
-@Table(name = "meals")
+@Table(name = "meals", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "date_time"}, name = "meals_unique_user_datetime_idx"))
 public class Meal extends AbstractBaseEntity {
     @Column(name = "date_time", nullable = false, columnDefinition = "timestamp default now()")
     @NotNull
@@ -22,11 +22,12 @@ public class Meal extends AbstractBaseEntity {
     @NotBlank
     private String description;
 
+
     @Column(name = "calories", nullable = false, columnDefinition = "int default 500")
     @Range(min = 10, max = 10000)
     private int calories;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(CONSTRAINT))
     private User user;
 
