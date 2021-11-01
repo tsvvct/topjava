@@ -9,6 +9,8 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.Util;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,12 +30,21 @@ public class InMemoryMealRepository implements MealRepository {
         usersMealsMap.put(UserTestData.USER_ID, userMeals);
     }
 
-
     @Override
     public Meal save(Meal meal, int userId) {
         Objects.requireNonNull(meal, "meal must not be null");
         InMemoryBaseRepository<Meal> meals = usersMealsMap.computeIfAbsent(userId, uId -> new InMemoryBaseRepository<>());
         return meals.save(meal);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        log.info("+++ PostConstruct");
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        log.info("+++ PreDestroy");
     }
 
     @Override

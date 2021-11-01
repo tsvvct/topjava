@@ -39,7 +39,7 @@ public class JpaMealRepository implements MealRepository {
     @Override
     @Transactional
     public boolean delete(int id, int userId) {
-        return em.createQuery("DELETE FROM Meal meal WHERE meal.id=:id AND meal.user.id=:userid")
+        return em.createNamedQuery(Meal.DELETE)
                 .setParameter("id", id)
                 .setParameter("userid", userId)
                 .executeUpdate() != 0;
@@ -47,7 +47,7 @@ public class JpaMealRepository implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
-        List<Meal> meals = em.createQuery("select meal FROM Meal meal WHERE meal.user.id=:userid and meal.id=:id", Meal.class)
+        List<Meal> meals = em.createNamedQuery(Meal.BY_ID, Meal.class)
                 .setParameter("userid", userId)
                 .setParameter("id", id)
                 .getResultList();
@@ -56,16 +56,14 @@ public class JpaMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        return em.createQuery("Select meal FROM Meal meal where meal.user.id=:userid ORDER BY meal.dateTime DESC", Meal.class)
+        return em.createNamedQuery(Meal.ALL_SORTED, Meal.class)
                 .setParameter("userid", userId)
                 .getResultList();
     }
 
     @Override
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        return em.createQuery("select meal from Meal meal " +
-                        "where meal.user.id=:userid and meal.dateTime>=:startDateTime AND meal.dateTime<:endDateTime " +
-                        "ORDER BY meal.dateTime DESC", Meal.class)
+        return em.createNamedQuery(Meal.FILTERED_SORTED, Meal.class)
                 .setParameter("userid", userId)
                 .setParameter("startDateTime", startDateTime)
                 .setParameter("endDateTime", endDateTime)

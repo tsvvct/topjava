@@ -1,77 +1,56 @@
 package ru.javawebinar.topjava;
 
-import org.junit.AssumptionViolatedException;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
+import org.junit.rules.Stopwatch;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.javawebinar.topjava.service.MealServiceTest;
 
-public class TimeMeasure extends ExternalResource {
+import java.util.concurrent.TimeUnit;
 
-    private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
+public class TimeMeasure {
 
     public static StringBuilder stringBuilder;
 
     @Rule
-    public final TestRule watchman = new TestWatcher() {
-        private long testStart;
-        private StringBuilder localStringBuilder;
-
+    public final Stopwatch stopwatch = new Stopwatch() {
         @Override
-        protected void succeeded(Description description) {
-            localStringBuilder.append(" - succeeded ");
+        protected void finished(long nanos, Description description) {
+            stringBuilder.append('\t')
+                    .append(description.getMethodName())
+                    .append(" duration: ")
+                    .append(formatDuration(nanos))
+                    .append('\n');
         }
 
-        @Override
-        protected void failed(Throwable e, Description description) {
-            localStringBuilder.append(" - failed ");
-        }
-
-        @Override
-        protected void skipped(AssumptionViolatedException e, Description description) {
-            localStringBuilder.append(" - skipped ");
-        }
-
-        @Override
-        protected void starting(Description description) {
-            localStringBuilder = new StringBuilder(description.getMethodName());
-            testStart = System.nanoTime();
-            super.starting(description);
-        }
-
-        @Override
-        protected void finished(Description description) {
-            super.finished(description);
-            long testEnd = System.nanoTime();
-            localStringBuilder.append(" - duration: ")
-                    .append(formatDuration((testEnd - testStart) / 1000000))
-                    .append("\n");
-            log.debug(localStringBuilder.toString());
-            stringBuilder.append(localStringBuilder.insert(0, "\t"));
-        }
-
-        private String formatDuration(Long duration) {
-            StringBuilder stringBuilder = (new StringBuilder()).append(duration % 1000).append("ms");
-            if ((duration / 1000) % 60 != 0) {
-                stringBuilder.insert(0, ((duration / 1000) % 60)).insert(1, "s ");
+        public String formatDuration(long nanos) {
+            StringBuilder result = new StringBuilder();
+            long minutes = TimeUnit.NANOSECONDS.toMinutes(nanos);
+            if (minutes != 0) {
+                result.append(minutes).append("m ");
             }
-            if ((duration / 60000) % 60 != 0) {
-                stringBuilder.insert(0, (duration / 60000) % 60).insert(1, "m ");
+            long seconds = TimeUnit.NANOSECONDS.toSeconds(nanos) - TimeUnit.MINUTES.toSeconds(minutes);
+            if (seconds != 0 || minutes != 0) {
+                result.append(seconds).append("s ");
             }
-            return stringBuilder.toString();
+            long millis = TimeUnit.NANOSECONDS.toMillis(nanos) -
+                    (TimeUnit.SECONDS.toMillis(seconds) + TimeUnit.MINUTES.toMillis(minutes));
+
+            result.append(millis).append("ms");
+
+            return result.toString();
         }
     };
 
     @ClassRule
-    public static final ExternalResource resource = new TimeMeasure() {
+    public static final ExternalResource externalResource = new ExternalResource() {
+        private final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
 
         @Override
-        protected void before() throws Throwable {
+        protected void before() {
             stringBuilder = new StringBuilder("\n--=( Test's summary )=--\n");
         }
 
