@@ -4,5 +4,5 @@ import org.springframework.test.context.ActiveProfiles;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
 
 @ActiveProfiles(resolver = ActiveDbProfileResolver.class)
-public class MealJpaServiceTest extends MealServiceTestClass {
+public class MealJpaServiceTest extends MealServiceTest {
 }

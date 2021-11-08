@@ -4,5 +4,5 @@ import org.springframework.test.context.ActiveProfiles;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
 
 @ActiveProfiles(resolver = ActiveDbProfileResolver.class)
-public class UserJpaServiceTest extends UserServiceTestClass {
+public class UserJpaServiceTest extends UserServiceTest {
 }

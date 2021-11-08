@@ -16,10 +16,10 @@ import java.util.List;
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.UserTestData.*;
 
-public class UserServiceTestClass extends BaseServiceTestClass {
+public abstract class UserServiceTest extends BaseServiceTestClass {
 
     @Autowired
-    private UserService service;
+    protected UserService service;
 
     @Autowired
     private CacheManager cacheManager;
