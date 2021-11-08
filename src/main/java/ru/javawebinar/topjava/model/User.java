@@ -65,7 +65,7 @@ public class User extends AbstractNamedEntity {
     }
 
     public User(Integer id, String name, String email, String password, Role role, Role... roles) {
-        this(id, name, email, password, DEFAULT_CALORIES_PER_DAY, true, new Date(), EnumSet.of(role, roles), Collections.emptyList());
+        this(id, name, email, password, DEFAULT_CALORIES_PER_DAY, true, new Date(), EnumSet.of(role, roles), null);
     }
 
     public User(Integer id, String name, String email, String password, int caloriesPerDay, boolean enabled, Date registered, Collection<Role> roles, Collection<Meal> meals) {
@@ -132,7 +132,7 @@ public class User extends AbstractNamedEntity {
     }
 
     public void setMeals(Collection<Meal> meals) {
-        this.meals = List.copyOf(meals);
+        this.meals = meals == null ? null : List.copyOf(meals);
     }
 
     @Override
