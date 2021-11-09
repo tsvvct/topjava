@@ -14,7 +14,7 @@ import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.UserTestData.*;
 
 @ActiveProfiles(Profiles.DATAJPA)
-public class UserDataJpaRepositoryTest extends UserServiceTest {
+public class DataJpaUserServiceTest extends UserServiceTest {
 
     @Test
     public void getWithMeals() {

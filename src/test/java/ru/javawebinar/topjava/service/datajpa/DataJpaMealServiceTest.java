@@ -16,7 +16,7 @@ import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.*;
 
 @ActiveProfiles(Profiles.DATAJPA)
-public class MealDataJpaRepositoryTest extends MealServiceTest {
+public class DataJpaMealServiceTest extends MealServiceTest {
     @Test
     public void getWithUser() {
         Meal actual = service.getWithUser(ADMIN_MEAL_ID, ADMIN_ID);

@@ -5,5 +5,5 @@ import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.service.UserServiceTest;
 
 @ActiveProfiles(Profiles.JPA)
-public class UserJpaRepositoryTest extends UserServiceTest {
+public class JpaUserServiceTest extends UserServiceTest {
 }
