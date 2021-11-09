@@ -47,4 +47,16 @@ public class MealService {
         Assert.notNull(meal, "meal must not be null");
         return repository.save(meal, userId);
     }
+
+    public Meal getWithUser(int id, int userId) {
+        return checkNotFoundWithId(repository.getWithUser(id, userId), id);
+    }
+
+    public List<Meal> getAllWithUser(int userId) {
+        return repository.getAllWithUser(userId);
+    }
+
+    public List<Meal> getBetweenInclusiveWithUser(@Nullable LocalDate startDate, @Nullable LocalDate endDate, int userId) {
+        return repository.getBetweenHalfOpenWithUser(atStartOfDayOrMin(startDate), atStartOfNextDayOrMax(endDate), userId);
+    }
 }

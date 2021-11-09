@@ -51,4 +51,18 @@ public class UserService {
         Assert.notNull(user, "user must not be null");
         checkNotFoundWithId(repository.save(user), user.id());
     }
+
+    public User getWithMeals(int id) {
+        return checkNotFoundWithId(repository.getWithMeals(id), id);
+    }
+
+    public User getByEmailWithMeals(String email) {
+        Assert.notNull(email, "email must not be null");
+        return checkNotFound(repository.getByEmailWithMeals(email), "email=" + email);
+    }
+
+    @Cacheable("users")
+    public List<User> getAllWithMeals() {
+        return repository.getAllWithMeals();
+    }
 }

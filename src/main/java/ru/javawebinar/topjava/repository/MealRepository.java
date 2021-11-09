@@ -20,4 +20,16 @@ public interface MealRepository {
 
     // ORDERED dateTime desc
     List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
+
+    default Meal getWithUser(int id, int userId) {
+        return null;
+    }
+
+    default List<Meal> getAllWithUser(int userId) {
+        return List.of();
+    }
+
+    default List<Meal> getBetweenHalfOpenWithUser(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
+        return List.of();
+    }
 }

@@ -1,9 +1,9 @@
-package ru.javawebinar.topjava.repository.datajpa;
+package ru.javawebinar.topjava.service.jdbc;
 
 import org.springframework.test.context.ActiveProfiles;
 import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.service.UserServiceTest;
 
-@ActiveProfiles(Profiles.DATAJPA)
-public class UserDataJpaRepositoryTest extends UserServiceTest {
+@ActiveProfiles(Profiles.JDBC)
+public class UserJdbcRepositoryTest extends UserServiceTest {
 }
