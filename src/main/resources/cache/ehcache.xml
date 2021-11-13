@@ -18,7 +18,7 @@
         <expiry>
             <none/>
         </expiry>
-        <heap>1</heap>
+        <heap>3</heap>
     </cache-template>
 
     <cache alias="users" uses-template="singleNonExpiryCache"/>

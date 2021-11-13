@@ -133,7 +133,10 @@ public class User extends AbstractNamedEntity {
     }
 
     public void setMeals(Collection<Meal> meals) {
-        this.meals = meals == null ? null : List.copyOf(meals);
+        // null is bad, we can easily iterate by empty list, and get it size
+        // and there is no needles to check every time null it or not,
+        // just take and use, and if it's empty then there's no meal for this user
+        this.meals = (meals == null) ? List.of() : List.copyOf(meals);
     }
 
     @Override

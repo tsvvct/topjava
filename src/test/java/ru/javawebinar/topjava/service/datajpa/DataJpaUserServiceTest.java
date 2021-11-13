@@ -19,8 +19,15 @@ public class DataJpaUserServiceTest extends UserServiceTest {
     @Test
     public void getWithMeals() {
         User actualUser = service.getWithMeals(USER_ID);
-        user.setMeals(MealTestData.meals);
-        USER_MATCHER_WITH_MEALS.assertMatch(actualUser, user);
+        User expectedUser = new User(user);
+        expectedUser.setMeals(MealTestData.meals);
+        USER_MATCHER_WITH_MEALS.assertMatch(actualUser, expectedUser);
+    }
+
+    @Test
+    public void getWithMealsForUserWithoutMeals() {
+        User actualUser = service.getWithMeals(USER_WO_MEALS_ID);
+        USER_MATCHER_WITH_MEALS.assertMatch(actualUser, userWoMeals);
     }
 
     @Test
@@ -31,15 +38,18 @@ public class DataJpaUserServiceTest extends UserServiceTest {
     @Test
     public void getByEmailWithMeals() {
         User user = service.getByEmailWithMeals("admin@gmail.com");
-        admin.setMeals(MealTestData.adminMeals);
-        USER_MATCHER_WITH_MEALS.assertMatch(user, admin);
+        User expectedUser = new User(admin);
+        expectedUser.setMeals(MealTestData.adminMeals);
+        USER_MATCHER_WITH_MEALS.assertMatch(user, expectedUser);
     }
 
     @Test
     public void getAllWithMeals() {
         List<User> all = service.getAllWithMeals();
-        admin.setMeals(MealTestData.adminMeals);
-        user.setMeals(MealTestData.meals);
-        USER_MATCHER_WITH_MEALS.assertMatch(all, admin, user);
+        User expectedUser1 = new User(admin);
+        expectedUser1.setMeals(MealTestData.adminMeals);
+        User expectedUser2 = new User(user);
+        expectedUser2.setMeals(MealTestData.meals);
+        USER_MATCHER_WITH_MEALS.assertMatch(all, expectedUser1, expectedUser2, userWoMeals);
     }
 }

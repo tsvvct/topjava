@@ -22,14 +22,14 @@ public interface MealRepository {
     List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
 
     default Meal getWithUser(int id, int userId) {
-        return null;
+        throw new UnsupportedOperationException("Default method is not implemented.");
     }
 
     default List<Meal> getAllWithUser(int userId) {
-        return List.of();
+        throw new UnsupportedOperationException("Default method is not implemented.");
     }
 
     default List<Meal> getBetweenHalfOpenWithUser(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        return List.of();
+        throw new UnsupportedOperationException("Default method is not implemented.");
     }
 }

@@ -47,4 +47,8 @@ public class MealTestData {
         return new Meal(MEAL1_ID, meal1.getDateTime().plus(2, ChronoUnit.MINUTES),
                 "Обновленный завтрак", 200, meal1.getUser());
     }
+
+    public static Meal getMealCopy(Meal meal) {
+        return new Meal(meal.id(), meal.getDateTime(), meal.getDescription(), meal.getCalories(), meal.getUser());
+    }
 }

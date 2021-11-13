@@ -20,14 +20,14 @@ public interface UserRepository {
     List<User> getAll();
 
     default User getWithMeals(int id) {
-        return null;
+        throw new UnsupportedOperationException("Default method is not implemented.");
     }
 
     default User getByEmailWithMeals(String email) {
-        return null;
+        throw new UnsupportedOperationException("Default method is not implemented.");
     }
 
     default List<User> getAllWithMeals() {
-        return List.of();
+        throw new UnsupportedOperationException("Default method is not implemented.");
     }
 }
