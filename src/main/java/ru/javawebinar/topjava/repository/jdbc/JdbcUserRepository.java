@@ -1,7 +1,6 @@
 package ru.javawebinar.topjava.repository.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,8 +15,9 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.util.*;
 
 @Repository
@@ -30,23 +30,20 @@ public class JdbcUserRepository implements UserRepository {
             LEFT JOIN user_roles ur on u.id = ur.user_id
             """;
 
-    private ResultSetExtractor<List<User>> resultSetExtractor = new ResultSetExtractor<>() {
-        @Override
-        public List<User> extractData(ResultSet rs) throws SQLException, DataAccessException {
-            Map<Integer, User> userMap = new HashMap<>();
+    private final ResultSetExtractor<List<User>> resultSetExtractor = rs -> {
+        Map<Integer, User> userMap = new HashMap<>();
 
-            while (rs.next()) {
-                User user = ROW_MAPPER.mapRow(rs, rs.getRow());
-                if (user.getRoles() == null) {
-                    user.setRoles(Collections.emptyList());
-                }
-                userMap.merge(user.getId(), user, (mappedUser, newUser) -> {
-                    mappedUser.getRoles().addAll(newUser.getRoles());
-                    return mappedUser;
-                });
+        while (rs.next()) {
+            User user = ROW_MAPPER.mapRow(rs, rs.getRow());
+            if (user.getRoles() == null) {
+                user.setRoles(Collections.emptyList());
             }
-            return List.copyOf(userMap.values());
+            userMap.merge(user.getId(), user, (mappedUser, newUser) -> {
+                mappedUser.getRoles().addAll(newUser.getRoles());
+                return mappedUser;
+            });
         }
+        return List.copyOf(userMap.values());
     };
 
     private final JdbcTemplate jdbcTemplate;
@@ -55,19 +52,27 @@ public class JdbcUserRepository implements UserRepository {
 
     private final SimpleJdbcInsert insertUser;
 
+    private final Validator validator;
+
     @Autowired
-    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, Validator validator) {
         this.insertUser = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
 
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.validator = validator;
     }
 
     @Override
     @Transactional
     public User save(User user) {
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(
+                    new HashSet<ConstraintViolation<?>>(violations));
+        }
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
         String rolesInsertSql = "INSERT INTO user_roles (user_id, role) values (:user_id, :role)";
 
@@ -78,7 +83,7 @@ public class JdbcUserRepository implements UserRepository {
             user.setId(newKey.intValue());
         } else {
             if (namedParameterJdbcTemplate.update("""
-                       UPDATE users SET name=:name, email=:email, password=:password, 
+                       UPDATE users SET name=:name, email=:email, password=:password,
                        registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
                     """, parameterSource) == 0) {
                 return null;
@@ -94,7 +99,7 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     private List<MapSqlParameterSource> extracted(Set<Role> userRoles, int userId) {
-        List<MapSqlParameterSource> params = new ArrayList<MapSqlParameterSource>();
+        List<MapSqlParameterSource> params = new ArrayList<>();
 
         for (Role role : userRoles) {
             MapSqlParameterSource source = new MapSqlParameterSource();

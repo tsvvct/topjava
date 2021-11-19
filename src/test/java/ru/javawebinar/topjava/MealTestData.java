@@ -29,10 +29,20 @@ public class MealTestData {
     public static final List<Meal> meals = List.of(meal7, meal6, meal5, meal4, meal3, meal2, meal1);
 
     public static Meal getNew() {
-        return new Meal(null, of(2020, Month.FEBRUARY, 1, 18, 0), "Созданный ужин", 300);
+        Meal meal = new Meal(null, of(2020, Month.FEBRUARY, 1, 18, 0), "Созданный ужин", 300);
+        meal.setUser(UserTestData.user);
+        return meal;
+    }
+
+    public static Meal getDuplicate() {
+        Meal meal = new Meal(null, meal1.getDateTime(), "duplicate", 100);
+        meal.setUser(UserTestData.user);
+        return meal;
     }
 
     public static Meal getUpdated() {
-        return new Meal(MEAL1_ID, meal1.getDateTime().plus(2, ChronoUnit.MINUTES), "Обновленный завтрак", 200);
+        Meal meal = new Meal(MEAL1_ID, meal1.getDateTime().plus(2, ChronoUnit.MINUTES), "Обновленный завтрак", 200);
+        meal.setUser(UserTestData.user);
+        return meal;
     }
 }
