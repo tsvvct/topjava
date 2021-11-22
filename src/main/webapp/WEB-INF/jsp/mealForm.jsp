@@ -8,16 +8,19 @@
 <jsp:include page="fragments/bodyHeader.jsp"/>
 
 <section>
+    <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
     <hr>
+    <%-- Не могу раскопать как сделать тернарным оператором так не работает--%>
+    <%--    <h2>${empty meal.getId() ? '<spring:message code="app.update"/>' : '<spring:message code="app.create"/>'}</h2>--%>
+    <%--        <h2>${empty meal.getId() ? <spring:message code="app.update"/> : <spring:message code="app.create"/>}</h2>--%>
     <h2><c:choose>
-        <c:when test="${param.action == 'create'}">
+        <c:when test="${empty meal.getId()}">
             <spring:message code="app.create"/>
         </c:when>
         <c:otherwise>
             <h2><spring:message code="app.update"/></h2>
         </c:otherwise>
     </c:choose></h2>
-    <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
     <form method="post" action="meals">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>

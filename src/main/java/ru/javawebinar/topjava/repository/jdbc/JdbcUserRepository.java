@@ -15,10 +15,13 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import static ru.javawebinar.topjava.util.ValidationUtil.validateValue;
 
 @Repository
 @Transactional(readOnly = true)
@@ -31,19 +34,21 @@ public class JdbcUserRepository implements UserRepository {
             """;
 
     private final ResultSetExtractor<List<User>> resultSetExtractor = rs -> {
-        Map<Integer, User> userMap = new HashMap<>();
+        List<User> userList = new ArrayList<>();
 
         while (rs.next()) {
             User user = ROW_MAPPER.mapRow(rs, rs.getRow());
             if (user.getRoles() == null) {
                 user.setRoles(Collections.emptyList());
             }
-            userMap.merge(user.getId(), user, (mappedUser, newUser) -> {
-                mappedUser.getRoles().addAll(newUser.getRoles());
-                return mappedUser;
-            });
+            userList.stream()
+                    .filter(storedUser -> storedUser.getId().equals(user.getId()))
+                    .findFirst()
+                    .ifPresentOrElse(
+                            storedUser -> storedUser.getRoles().addAll(user.getRoles()),
+                            () -> userList.add(user));
         }
-        return List.copyOf(userMap.values());
+        return userList;
     };
 
     private final JdbcTemplate jdbcTemplate;
@@ -68,19 +73,14 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     @Transactional
     public User save(User user) {
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(
-                    new HashSet<ConstraintViolation<?>>(violations));
-        }
+        validateValue(validator, user);
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
         String rolesInsertSql = "INSERT INTO user_roles (user_id, role) values (:user_id, :role)";
-
+        Integer userId = user.getId();
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
-            List<MapSqlParameterSource> rolesParams = extracted(user.getRoles(), newKey.intValue());
-            namedParameterJdbcTemplate.batchUpdate(rolesInsertSql, rolesParams.toArray(MapSqlParameterSource[]::new));
-            user.setId(newKey.intValue());
+            userId = newKey.intValue();
+            user.setId(userId);
         } else {
             if (namedParameterJdbcTemplate.update("""
                        UPDATE users SET name=:name, email=:email, password=:password,
@@ -89,11 +89,11 @@ public class JdbcUserRepository implements UserRepository {
                 return null;
             } else {
                 namedParameterJdbcTemplate.update("DELETE FROM user_roles WHERE user_id=:id", parameterSource);
-                if (user.getRoles().size() > 0) {
-                    List<MapSqlParameterSource> rolesParams = extracted(user.getRoles(), user.getId());
-                    namedParameterJdbcTemplate.batchUpdate(rolesInsertSql, rolesParams.toArray(MapSqlParameterSource[]::new));
-                }
             }
+        }
+        if (user.getRoles() != null && user.getRoles().size() > 0) {
+            List<MapSqlParameterSource> rolesParams = extracted(user.getRoles(), userId);
+            namedParameterJdbcTemplate.batchUpdate(rolesInsertSql, rolesParams.toArray(MapSqlParameterSource[]::new));
         }
         return user;
     }
