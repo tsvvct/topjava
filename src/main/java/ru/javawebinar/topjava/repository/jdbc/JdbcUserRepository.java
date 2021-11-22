@@ -15,11 +15,7 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
-import javax.validation.Validator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.validateValue;
 
@@ -34,21 +30,28 @@ public class JdbcUserRepository implements UserRepository {
             """;
 
     private final ResultSetExtractor<List<User>> resultSetExtractor = rs -> {
-        List<User> userList = new ArrayList<>();
+//        List<User> userList = new ArrayList<>();
+        Map<String, User> userMap = new TreeMap<>();
+        //name,email sorting
 
         while (rs.next()) {
             User user = ROW_MAPPER.mapRow(rs, rs.getRow());
             if (user.getRoles() == null) {
                 user.setRoles(Collections.emptyList());
             }
-            userList.stream()
-                    .filter(storedUser -> storedUser.getId().equals(user.getId()))
-                    .findFirst()
-                    .ifPresentOrElse(
-                            storedUser -> storedUser.getRoles().addAll(user.getRoles()),
-                            () -> userList.add(user));
+            userMap.merge(user.getName() + user.getEmail(), user, (mappedUser, newUser) -> {
+                mappedUser.getRoles().addAll(newUser.getRoles());
+                return mappedUser;
+            });
+//            userList.stream()
+//                    .filter(storedUser -> storedUser.getId().equals(user.getId()))
+//                    .findFirst()
+//                    .ifPresentOrElse(
+//                            storedUser -> storedUser.getRoles().addAll(user.getRoles()),
+//                            () -> userList.add(user));
         }
-        return userList;
+        return List.copyOf(userMap.values());
+//        return userList;
     };
 
     private final JdbcTemplate jdbcTemplate;
@@ -57,23 +60,20 @@ public class JdbcUserRepository implements UserRepository {
 
     private final SimpleJdbcInsert insertUser;
 
-    private final Validator validator;
-
     @Autowired
-    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, Validator validator) {
+    public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertUser = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("id");
 
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-        this.validator = validator;
     }
 
     @Override
     @Transactional
     public User save(User user) {
-        validateValue(validator, user);
+        validateValue(user);
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
         String rolesInsertSql = "INSERT INTO user_roles (user_id, role) values (:user_id, :role)";
         Integer userId = user.getId();
