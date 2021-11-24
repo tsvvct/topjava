@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
@@ -30,16 +31,14 @@ public class JdbcUserRepository implements UserRepository {
             """;
 
     private final ResultSetExtractor<List<User>> resultSetExtractor = rs -> {
-//        List<User> userList = new ArrayList<>();
-        Map<String, User> userMap = new TreeMap<>();
-        //name,email sorting
+        Map<Integer, User> userMap = new LinkedHashMap<>();
 
         while (rs.next()) {
             User user = ROW_MAPPER.mapRow(rs, rs.getRow());
             if (user.getRoles() == null) {
                 user.setRoles(Collections.emptyList());
             }
-            userMap.merge(user.getName() + user.getEmail(), user, (mappedUser, newUser) -> {
+            userMap.merge(user.getId(), user, (mappedUser, newUser) -> {
                 mappedUser.getRoles().addAll(newUser.getRoles());
                 return mappedUser;
             });
@@ -91,7 +90,7 @@ public class JdbcUserRepository implements UserRepository {
                 namedParameterJdbcTemplate.update("DELETE FROM user_roles WHERE user_id=:id", parameterSource);
             }
         }
-        if (user.getRoles() != null && user.getRoles().size() > 0) {
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
             List<MapSqlParameterSource> rolesParams = extracted(user.getRoles(), userId);
             namedParameterJdbcTemplate.batchUpdate(rolesInsertSql, rolesParams.toArray(MapSqlParameterSource[]::new));
         }
