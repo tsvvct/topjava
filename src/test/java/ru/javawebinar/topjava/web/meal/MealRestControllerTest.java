@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.web.meal;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -14,6 +15,9 @@ import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -66,7 +70,7 @@ public class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getBetween() throws Exception {
-        perform(MockMvcRequestBuilders.get(REST_URL + "between?startDateTime=2020-01-31T00:00:00&endDateTime=2020-01-31T23:59:59"))
+        perform(MockMvcRequestBuilders.get(REST_URL + "between?startDate=2020-01-31&startTime=00:00&endDate=2020-01-31&endTime=23:59"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MEAL_TO_MATCHER.contentJson(getTos(List.of(meal7, meal6, meal5, meal4), authUserCaloriesPerDay())));
@@ -134,17 +138,44 @@ public class MealRestControllerTest extends AbstractControllerTest {
         MEAL_MATCHER.assertMatch(mealService.get(newId, USER_ID), newMeal);
     }
 
-//    @Test
-//    @Rollback(false)
-//    void duplicateDateTimeCreate() throws Exception {
-//        Meal duplicatedMeal = MealTestData.getNew();
-//        duplicatedMeal.setDateTime(meal1.getDateTime());
-//        String mealJson = JsonUtil.writeValue(duplicatedMeal);
-//        ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(mealJson))
-//                .andExpect(status().isCreated());
-//    }
+    @Test
+    void duplicateDateTimeCreate() throws Exception {
+        //https://stackoverflow.com/questions/27987097/disabling-transaction-on-spring-testng-test-method
+        //Не знаю надо ли проводить подобные тесты для REST контроллера, ведь такие случаи тестируются у нас в сервисе,
+        //но было интересно понять почему они не работают и как можно их проводить. Наверняка есть более элегантный
+        //способ, но я его не нашел. :`(
+        Meal duplicatedMeal = MealTestData.getNew();
+        duplicatedMeal.setDateTime(meal1.getDateTime());
+        String mealJson = JsonUtil.writeValue(duplicatedMeal);
+
+        AtomicReference<Exception> exc = new AtomicReference<>();
+        Runnable task = () -> {
+            try {
+                perform(MockMvcRequestBuilders.post(REST_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mealJson))
+                        .andExpect(status().isCreated());
+            } catch (Exception e) {
+                exc.set(e);
+            }
+        };
+
+        validateRootCause(
+                PSQLException.class, () -> {
+                    ExecutorService executor = Executors.newFixedThreadPool(1);
+                    executor.submit(task);
+                    executor.shutdown();
+                    while (!executor.isTerminated()) {
+                        if (exc.get() != null) {
+                            throw exc.get();
+                        }
+                    }
+                    if (exc.get() != null) {
+                        throw exc.get();
+                    }
+                }
+        );
+    }
 
     protected <T extends Throwable> void validateRootCause(Class<T> rootExceptionClass, Executable executable) {
         assertThrows(rootExceptionClass, () -> {
