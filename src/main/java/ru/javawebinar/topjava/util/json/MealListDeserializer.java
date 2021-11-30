@@ -28,16 +28,6 @@ public class MealListDeserializer extends StdDeserializer<List<Meal>> {
 
         List<Meal> mealList = jsonparser.readValueAs(new TypeReference<List<Meal>>() {
         });
-//        List<Meal> mealList = new ArrayList<>();
-//        TreeNode tn = jsonparser.readValueAsTree();
-//        if (tn.isArray()) {
-//            for (JsonNode node : (ArrayNode) tn) {
-//                Meal meal = new Meal(node.get("id").asInt(), LocalDateTime.parse(node.get("dateTime").asText()),
-//                                node.get("description").asText(), node.get("calories").asInt());
-//
-//                mealList.add(meal);
-//            }
-//        }
         return mealList;
     }
 

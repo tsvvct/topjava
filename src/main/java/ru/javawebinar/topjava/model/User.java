@@ -1,13 +1,10 @@
 package ru.javawebinar.topjava.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.util.CollectionUtils;
-import ru.javawebinar.topjava.util.json.MealListDeserializer;
-import ru.javawebinar.topjava.util.json.MealListSerializer;
 
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
@@ -74,9 +71,9 @@ public class User extends AbstractNamedEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")//, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderBy("dateTime DESC")
     @OnDelete(action = OnDeleteAction.CASCADE) //https://stackoverflow.com/a/44988100/548473
-//    @JsonManagedReference
-    @JsonSerialize(using = MealListSerializer.class)
-    @JsonDeserialize(using = MealListDeserializer.class)
+    @JsonManagedReference
+//    @JsonSerialize(using = MealListSerializer.class)
+//    @JsonDeserialize(using = MealListDeserializer.class)
     private List<Meal> meals;
 
     public User() {

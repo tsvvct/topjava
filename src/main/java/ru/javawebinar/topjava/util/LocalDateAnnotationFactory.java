@@ -19,16 +19,16 @@ public class LocalDateAnnotationFactory implements
 
     @Override
     public Printer<?> getPrinter(LocalDateFormat annotation, Class<?> fieldType) {
-        return getAddressFormatter(annotation, fieldType);
+        return getLocalDateFormatter(annotation, fieldType);
     }
 
     @Override
     public Parser<?> getParser(LocalDateFormat annotation, Class<?> fieldType) {
-        return getAddressFormatter(annotation, fieldType);
+        return getLocalDateFormatter(annotation, fieldType);
     }
 
-    private LocalDateFormatter getAddressFormatter(LocalDateFormat annotation,
-                                                   Class<?> fieldType) {
+    private LocalDateFormatter getLocalDateFormatter(LocalDateFormat annotation,
+                                                     Class<?> fieldType) {
         LocalDateFormatter formatter = new LocalDateFormatter(annotation.pattern());
         return formatter;
     }

@@ -11,6 +11,11 @@ import java.util.Locale;
 public class LocalTimeFormatter implements Formatter<LocalTime> {
     private String pattern = "HH:mm";
 
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+    public LocalTimeFormatter() {
+    }
+
     public LocalTimeFormatter(String pattern) {
         this.pattern = pattern;
     }
@@ -26,6 +31,6 @@ public class LocalTimeFormatter implements Formatter<LocalTime> {
     }
 
     protected DateTimeFormatter getFormatter(Locale locale) {
-        return DateTimeFormatter.ofPattern(pattern, locale);
+        return formatter.withLocale(locale);
     }
 }

@@ -19,16 +19,16 @@ public class LocalTimeAnnotationFactory implements
 
     @Override
     public Printer<?> getPrinter(LocalTimeFormat annotation, Class<?> fieldType) {
-        return getAddressFormatter(annotation, fieldType);
+        return getLocalTimeFormatter(annotation, fieldType);
     }
 
     @Override
     public Parser<?> getParser(LocalTimeFormat annotation, Class<?> fieldType) {
-        return getAddressFormatter(annotation, fieldType);
+        return getLocalTimeFormatter(annotation, fieldType);
     }
 
-    private LocalTimeFormatter getAddressFormatter(LocalTimeFormat annotation,
-                                                   Class<?> fieldType) {
+    private LocalTimeFormatter getLocalTimeFormatter(LocalTimeFormat annotation,
+                                                     Class<?> fieldType) {
         return new LocalTimeFormatter(annotation.pattern());
     }
 }

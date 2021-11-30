@@ -11,6 +11,10 @@ import java.util.Locale;
 public class LocalDateFormatter implements Formatter<LocalDate> {
 
     private String pattern = "yyyy-MM-dd";
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+    public LocalDateFormatter() {
+    }
 
     public LocalDateFormatter(String pattern) {
         this.pattern = pattern;
@@ -27,6 +31,6 @@ public class LocalDateFormatter implements Formatter<LocalDate> {
     }
 
     protected DateTimeFormatter getFormatter(Locale locale) {
-        return DateTimeFormatter.ofPattern(pattern, locale);
+        return formatter.withLocale(locale);
     }
 }
