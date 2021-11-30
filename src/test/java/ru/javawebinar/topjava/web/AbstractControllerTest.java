@@ -1,7 +1,7 @@
 package ru.javawebinar.topjava.web;
 
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -14,6 +14,7 @@ import ru.javawebinar.topjava.ActiveDbProfileResolver;
 import ru.javawebinar.topjava.Profiles;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 @SpringJUnitWebConfig(locations = {
         "classpath:spring/spring-app.xml",
@@ -44,6 +45,14 @@ public abstract class AbstractControllerTest {
                 .webAppContextSetup(webApplicationContext)
                 .addFilter(CHARACTER_ENCODING_FILTER)
                 .build();
+    }
+
+    protected boolean isDataJpaProfile() {
+        return isProfileActive(Profiles.DATAJPA);
+    }
+
+    protected boolean isProfileActive(String profile) {
+        return List.of(webApplicationContext.getEnvironment().getActiveProfiles()).contains(profile);
     }
 
     protected ResultActions perform(MockHttpServletRequestBuilder builder) throws Exception {

@@ -37,6 +37,18 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getWithMeal() throws Exception {
+//  как в прошлой домашке
+        if (!isDataJpaProfile()) {
+            return;
+        }
+// или по исключению отлавливать, но так чуть менее понятно что хотел сказать автор
+//        User userWithMeals;
+//        try {
+//            userWithMeals = userService.getWithMeals(ADMIN_ID);
+//        } catch (UnsupportedOperationException e) {
+//            return;
+//        }
+
         User userWithMeals = userService.getWithMeals(ADMIN_ID);
         perform(MockMvcRequestBuilders.get(REST_URL + "/" + ADMIN_ID + "/with-meals"))
                 .andExpect(status().isOk())
