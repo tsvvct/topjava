@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.web.user;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -30,9 +31,8 @@ class ProfileRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getWithMeal() throws Exception {
-        if (!isDataJpaProfile()) {
-            return;
-        }
+        Assumptions.assumeTrue(isDataJpaProfile(), "Not supported with non DataJpa profile.");
+
         User userWithMeals = userService.getWithMeals(USER_ID);
         perform(MockMvcRequestBuilders.get(REST_URL + "/with-meals"))
                 .andExpect(status().isOk())

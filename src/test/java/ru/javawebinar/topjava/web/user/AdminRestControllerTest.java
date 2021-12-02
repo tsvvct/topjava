@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.web.user;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -37,17 +38,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
     @Test
     void getWithMeal() throws Exception {
-//  как в прошлой домашке
-        if (!isDataJpaProfile()) {
-            return;
-        }
-// или по исключению отлавливать, но так чуть менее понятно что хотел сказать автор
-//        User userWithMeals;
-//        try {
-//            userWithMeals = userService.getWithMeals(ADMIN_ID);
-//        } catch (UnsupportedOperationException e) {
-//            return;
-//        }
+        Assumptions.assumeTrue(isDataJpaProfile(), "Not supported with non DataJpa profile.");
 
         User userWithMeals = userService.getWithMeals(ADMIN_ID);
         perform(MockMvcRequestBuilders.get(REST_URL + "/" + ADMIN_ID + "/with-meals"))
