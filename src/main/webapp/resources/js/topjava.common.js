@@ -9,6 +9,10 @@ function makeEditable(datatableApi) {
         }
     });
 
+    $(".edit").click(function () {
+        edit($(this).closest('tr').attr("id"));
+    });
+
     $(document).ajaxError(function (event, jqXHR, options, jsExc) {
         failNoty(jqXHR);
     });
@@ -17,7 +21,14 @@ function makeEditable(datatableApi) {
     $.ajaxSetup({cache: false});
 }
 
+function edit(id) {
+    editRow(id);
+}
+
 function add() {
+    $("#modal-title-add").show();
+    $("#modal-title-edit").hide();
+
     form.find(":input").val("");
     $("#editRow").modal();
 }
