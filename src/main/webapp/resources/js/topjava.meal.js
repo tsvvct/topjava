@@ -1,5 +1,4 @@
-const mealAjaxUrl = "meals/ui/";
-const mealRestAjaxUrl = "rest/profile/meals/";
+const mealAjaxUrl = "ui/meals/";
 
 // https://stackoverflow.com/a/5064235/548473
 const ctx = {
@@ -8,7 +7,7 @@ const ctx = {
 
 function editRow(id) {
     $.ajax({
-        url: mealRestAjaxUrl + id,
+        url: mealAjaxUrl + id,
         type: "GET"
     }).done(function (meal) {
         $("#modal-title-add").hide();
@@ -24,6 +23,19 @@ function editRow(id) {
 function clearFilter() {
     $('#filter-form').find(":input").val("");
     updateTable();
+}
+
+function updateMealTable() {
+    let url = mealAjaxUrl;
+    let filterIsEmpty = $("#filter-form input").filter(function () {return $.trim($(this).val()).length !== 0;}).length === 0;
+    let filter = null;
+    if (!filterIsEmpty) {
+        url += "filter";
+        filter = $('#filter-form').serialize();
+    }
+    $.get(url, filter, function (data) {
+        ctx.datatableApi.clear().rows.add(data).draw();
+    });
 }
 
 $(function () {
@@ -57,6 +69,6 @@ $(function () {
                 ]
             ]
         }),
-        () => $('#filter-form').serialize()
+        updateMealTable
     );
 });

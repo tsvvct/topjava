@@ -31,7 +31,7 @@
             </thead>
             <c:forEach items="${requestScope.users}" var="user">
                 <jsp:useBean id="user" type="ru.javawebinar.topjava.model.User"/>
-                <tr class="${user.isEnabled() ? 'top-java-enabled' : 'top-java-disabled'}" id="user-row" data-item-id="${user.id}">
+                <tr class="${user.isEnabled() ? 'top-java-enabled' : 'top-java-disabled'}" id="${user.id}">
                     <td><c:out value="${user.name}"/></td>
                     <td><a href="mailto:${user.email}">${user.email}</a></td>
                     <td>${user.roles}</td>

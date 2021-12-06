@@ -6,17 +6,19 @@ const ctx = {
 };
 
 function onCheckboxClick() {
-    let userRow = $(this).closest('#user-row');
-    let userId = $(this).closest('tr').attr("data-item-id");
+    let userRow = $(this).closest('tr');
+    let userId = userRow.attr('id');
     let enabled = this.checked ? " enabled" : " disabled";
     $.ajax({
-        type: "PUT",
-        url: "rest/admin/users/" + userId + "/enable?enable=" + this.checked
+        type: "PATCH",
+        url: userAjaxUrl + userId + "/enable?enable=" + this.checked
     }).done(() => {
         userRow.attr("class", this.checked ? "top-java-enabled" : "top-java-disabled");
         successNoty("" + userId + enabled);
     }).fail(
-        () => {this.checked = !this.checked;}
+        () => {
+            this.checked = !this.checked;
+        }
     );
 }
 
@@ -60,5 +62,5 @@ $(function () {
         })
     );
 
-    $( "input[type=checkbox]" ).on( "click", onCheckboxClick);
+    $("input[type=checkbox]").on("click", onCheckboxClick);
 });

@@ -61,6 +61,7 @@ public class UserService {
     @CacheEvict(value = "users", allEntries = true)
     public void enable(int id, boolean enable) {
         User user = repository.get(id);
+        Assert.notNull(user, "user with id:" + id + " doesn't exist.");
         user.setEnabled(enable);
         update(user);
     }

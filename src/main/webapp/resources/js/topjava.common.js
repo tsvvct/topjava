@@ -1,18 +1,19 @@
 let form;
-let getFilter;
+let updateTable;
 
-function makeEditable(datatableApi, gettingFilter = () => null) {
+function makeEditable(datatableApi, specificUpdateTable = defaultUpdateTable) {
     ctx.datatableApi = datatableApi;
     form = $('#detailsForm');
-    getFilter = gettingFilter;
+    updateTable = specificUpdateTable;
+
     $(".delete").click(function () {
         if (confirm('Are you sure?')) {
-            deleteRow($(this).closest('tr').attr("data-item-id"));
+            deleteRow($(this).closest('tr').attr('id'));
         }
     });
 
-    $(".edit").click(function () {
-        edit($(this).closest('tr').attr("data-item-id"));
+    $('.edit').click(function () {
+        edit($(this).closest('tr').attr('id'));
     });
 
     $(document).ajaxError(function (event, jqXHR, options, jsExc) {
@@ -45,13 +46,8 @@ function deleteRow(id) {
     });
 }
 
-function updateTable() {
-    let url = ctx.ajaxUrl;
-    let filter = getFilter();
-    if (filter != null) {
-        url += "filter";
-    }
-    $.get(url, filter, function (data) {
+function defaultUpdateTable() {
+    $.get(ctx.ajaxUrl, function (data) {
         ctx.datatableApi.clear().rows.add(data).draw();
     });
 }
