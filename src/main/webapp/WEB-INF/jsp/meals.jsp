@@ -13,26 +13,34 @@
     <div class="container">
 <%--        NATIVE <section>--%>
     <h3><spring:message code="meal.title"/></h3>
-
-    <form method="get" action="meals/filter">
-        <dl>
-            <dt><spring:message code="meal.startDate"/>:</dt>
-            <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
-        </dl>
-        <dl>
-            <dt><spring:message code="meal.endDate"/>:</dt>
-            <dd><input type="date" name="endDate" value="${param.endDate}"></dd>
-        </dl>
-        <dl>
-            <dt><spring:message code="meal.startTime"/>:</dt>
-            <dd><input type="time" name="startTime" value="${param.startTime}"></dd>
-        </dl>
-        <dl>
-            <dt><spring:message code="meal.endTime"/>:</dt>
-            <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
-        </dl>
-        <button type="submit"><spring:message code="meal.filter"/></button>
-    </form>
+    <div class="form-group">
+        <form id="filter-form">
+            <dl>
+                <dt><spring:message code="meal.startDate"/>:</dt>
+                <dd><input type="date" id="start-date" name="startDate" value="${param.startDate}"></dd>
+            </dl>
+            <dl>
+                <dt><spring:message code="meal.endDate"/>:</dt>
+                <dd><input type="date" id="end-date" name="endDate" value="${param.endDate}"></dd>
+            </dl>
+            <dl>
+                <dt><spring:message code="meal.startTime"/>:</dt>
+                <dd><input type="time" id="start-time" name="startTime" value="${param.startTime}"></dd>
+            </dl>
+            <dl>
+                <dt><spring:message code="meal.endTime"/>:</dt>
+                <dd><input type="time" id="end-time" name="endTime" value="${param.endTime}"></dd>
+            </dl>
+            <button type="button" class="btn btn-danger" onclick="clearFilter()">
+                <span class="fa fa-close"></span>
+                <spring:message code="common.cancel"/>
+            </button>
+            <button type="button" class="btn btn-primary" onclick="updateTable()">
+                <span class="fa fa-check"></span>
+                <spring:message code="meal.filter"/>
+            </button>
+        </form>
+    </div>
     <button class="btn btn-primary" onclick="add()">
         <span class="fa fa-plus"></span>
         <spring:message code="common.add"/>
@@ -49,7 +57,7 @@
         </thead>
         <c:forEach items="${requestScope.meals}" var="meal">
             <jsp:useBean id="meal" type="ru.javawebinar.topjava.to.MealTo"/>
-            <tr data-meal-excess="${meal.excess}" id="${meal.id}">
+            <tr data-meal-excess="${meal.excess}" data-item-id="${meal.id}">
                 <td class="date-time">
                         <%--${meal.dateTime.toLocalDate()} ${meal.dateTime.toLocalTime()}--%>
                         <%--<%=TimeUtil.toString(meal.getDateTime())%>--%>

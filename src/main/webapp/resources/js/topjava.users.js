@@ -5,6 +5,21 @@ const ctx = {
     ajaxUrl: userAjaxUrl
 };
 
+function onCheckboxClick() {
+    let userRow = $(this).closest('#user-row');
+    let userId = $(this).closest('tr').attr("data-item-id");
+    let enabled = this.checked ? " enabled" : " disabled";
+    $.ajax({
+        type: "PUT",
+        url: "rest/admin/users/" + userId + "/enable?enable=" + this.checked
+    }).done(() => {
+        userRow.attr("class", this.checked ? "top-java-enabled" : "top-java-disabled");
+        successNoty("" + userId + enabled);
+    }).fail(
+        () => {this.checked = !this.checked;}
+    );
+}
+
 // $(document).ready(function () {
 $(function () {
     makeEditable(
@@ -44,4 +59,6 @@ $(function () {
             ]
         })
     );
+
+    $( "input[type=checkbox]" ).on( "click", onCheckboxClick);
 });

@@ -21,6 +21,11 @@ function editRow(id) {
     });
 }
 
+function clearFilter() {
+    $('#filter-form').find(":input").val("");
+    updateTable();
+}
+
 $(function () {
     makeEditable(
         $("#datatable").DataTable({
@@ -51,6 +56,7 @@ $(function () {
                     "desc"
                 ]
             ]
-        })
+        }),
+        () => $('#filter-form').serialize()
     );
 });
