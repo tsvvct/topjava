@@ -64,4 +64,42 @@ $(function () {
             }
         })
     );
+
+    let inputs = ["startDate", "endDate", "startTime", "endTime", "dateTime"];
+    let forControl;
+    for (const inputName of inputs) {
+        forControl = document.querySelector('input[name="' + inputName + '"]');
+        forControl.addEventListener('click', function(e) {e.preventDefault();});
+    }
+
+    let locale = (navigator.language === 'ru-RU') ? 'ru' : 'en';
+    $.datetimepicker.setLocale(locale);
+
+    $('#startDate').datetimepicker({
+        format:'Y-m-d',
+        timepicker:false
+    });
+
+    $('#endDate').datetimepicker({
+        format:'Y-m-d',
+        timepicker:false
+    });
+
+    $('#startTime').datetimepicker({
+        datepicker:false,
+        step:10,
+        format:'H:i'
+    });
+
+    $('#endTime').datetimepicker({
+        datepicker:false,
+        step:10,
+        format:'H:i'
+    });
+
+    $('#dateTime').datetimepicker({
+        validateOnBlur:false,
+        step:10,
+        format:'Y-m-d\\TH:i'
+    });
 });
