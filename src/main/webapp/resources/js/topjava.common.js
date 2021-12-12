@@ -49,21 +49,12 @@ function save() {
     $.ajax({
         type: "POST",
         url: ctx.ajaxUrl,
-        data: form.serializeArray().reduce(reducer, {})
+        data: form.serialize()
     }).done(function () {
         $("#editRow").modal("hide");
         ctx.updateTable();
         successNoty("common.saved");
     });
-}
-
-function reducer(output, value) {
-    let readyValue = value.value;
-    if (value.name === "calories") {
-        readyValue = value.value === "" ? "0" : value.value;
-    }
-    output[value.name] = readyValue;
-    return output
 }
 
 let failedNote;
