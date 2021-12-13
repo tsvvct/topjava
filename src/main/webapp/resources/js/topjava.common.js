@@ -49,12 +49,16 @@ function save() {
     $.ajax({
         type: "POST",
         url: ctx.ajaxUrl,
-        data: form.serialize()
+        data: formSerializer()
     }).done(function () {
         $("#editRow").modal("hide");
         ctx.updateTable();
         successNoty("common.saved");
     });
+}
+
+function formSerializer() {
+    return form.serialize();
 }
 
 let failedNote;

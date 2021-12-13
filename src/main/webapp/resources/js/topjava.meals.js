@@ -12,6 +12,19 @@ const ctx = {
     }
 }
 
+//overriding func from topjava.common.js
+function formSerializer() {
+    return form.serializeArray().reduce(reducer, {});
+}
+
+function reducer(output, value) {
+    if (value.name === "calories" && value.value === "") {
+        return output;
+    }
+    output[value.name] = value.value;
+    return output;
+}
+
 function clearFilter() {
     $("#filter")[0].reset();
     $.get(mealAjaxUrl, updateTableByData);
