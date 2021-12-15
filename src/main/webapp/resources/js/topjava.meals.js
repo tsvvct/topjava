@@ -19,7 +19,7 @@ function formSerializer() {
 
 function reducer(output, value) {
     if (value.name === "calories" && value.value === "") {
-        return output;
+        // return output;
     }
     output[value.name] = value.value;
     return output;
@@ -82,37 +82,39 @@ $(function () {
     let forControl;
     for (const inputName of inputs) {
         forControl = document.querySelector('input[name="' + inputName + '"]');
-        forControl.addEventListener('click', function(e) {e.preventDefault();});
+        forControl.addEventListener('click', function (e) {
+            e.preventDefault();
+        });
     }
 
     let locale = (navigator.language === 'ru-RU') ? 'ru' : 'en';
     $.datetimepicker.setLocale(locale);
 
     $('#startDate').datetimepicker({
-        format:'Y-m-d',
-        timepicker:false
+        format: 'Y-m-d',
+        timepicker: false
     });
 
     $('#endDate').datetimepicker({
-        format:'Y-m-d',
-        timepicker:false
+        format: 'Y-m-d',
+        timepicker: false
     });
 
     $('#startTime').datetimepicker({
-        datepicker:false,
-        step:10,
-        format:'H:i'
+        datepicker: false,
+        step: 10,
+        format: 'H:i'
     });
 
     $('#endTime').datetimepicker({
-        datepicker:false,
-        step:10,
-        format:'H:i'
+        datepicker: false,
+        step: 10,
+        format: 'H:i'
     });
 
     $('#dateTime').datetimepicker({
-        validateOnBlur:false,
-        step:10,
-        format:'Y-m-d\\TH:i'
+        validateOnBlur: false,
+        step: 10,
+        format: 'Y-m-d\\TH:i'
     });
 });
