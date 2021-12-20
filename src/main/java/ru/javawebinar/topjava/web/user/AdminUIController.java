@@ -34,7 +34,7 @@ public class AdminUIController extends AbstractUserController {
 
     @PostMapping(consumes = "application/x-www-form-urlencoded")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void createOrUpdate2(@Valid @ModelAttribute UserTo userTo) {
+    public void createOrUpdate(@Valid @ModelAttribute UserTo userTo) {
         if (userTo.isNew()) {
             super.create(userTo);
         } else {

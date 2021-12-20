@@ -3,6 +3,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <script type="text/javascript">
+    var locale = "${pageContext.response.locale}";
     var i18n = [];
     <%-- user.add/user.edit or meal.add/meal.edit --%>
     i18n["addTitle"] = '<spring:message code="${param.page}.add"/>';

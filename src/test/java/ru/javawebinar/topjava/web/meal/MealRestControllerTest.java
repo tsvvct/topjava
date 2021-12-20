@@ -15,9 +15,11 @@ import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.I18nMessageResolver;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
@@ -84,17 +86,45 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     @Transactional(propagation = Propagation.NEVER)
-    void createWithDuplicatedEmail() throws Exception {
+    void createWithDuplicatedDateTime() throws Exception {
         Meal newMeal = getNew();
         newMeal.setDateTime(meal1.getDateTime());
-        String expectedErrDetails = I18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_DATETIME);//"Meal with such date time already exist";
-        perform(MockMvcRequestBuilders.post(REST_URL)
+        String expectedErrDetails = i18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_DATETIME);//"Meal with such date time already exist";
+        createWithNotValidData(newMeal, expectedErrDetails);
+
+    }
+
+    @Test
+    void createWithNotValidName() throws Exception {
+        Meal newMeal = getNew();
+        newMeal.setDateTime(null);
+        createWithNotValidData(newMeal, "не должно равняться null");
+    }
+
+    @Test
+    void createWithNotValidDescription() throws Exception {
+        Meal newMeal = getNew();
+        newMeal.setDescription("");
+        createWithNotValidData(newMeal, "не должно быть пустым", "размер должен находиться в диапазоне");
+    }
+
+    @Test
+    void createWithNotValidCallories() throws Exception {
+        Meal newMeal = getNew();
+        newMeal.setCalories(null);
+        createWithNotValidData(newMeal, "не должно равняться null");
+    }
+
+    void createWithNotValidData(Meal notValidMeal, String... expectedErrDetails) throws Exception {
+        var performRes = perform(MockMvcRequestBuilders.post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(user))
-                .content(JsonUtil.writeValue(newMeal))
-        ).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.detail").value(expectedErrDetails));
-//                .andExpect(content().string(containsString(expectedErrDetails)));
+                .content(JsonUtil.writeValue(notValidMeal))
+        ).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        for (String errDetail : expectedErrDetails) {
+            performRes.andExpect(content().string(containsString(errDetail)));
+        }
+        //.andExpect(jsonPath("$.detail").value(expectedErrDetails));
     }
 
     @Test

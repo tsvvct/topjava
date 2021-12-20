@@ -36,6 +36,9 @@ public abstract class AbstractControllerTest {
     @Autowired
     public Environment env;
 
+    @Autowired
+    protected I18nMessageResolver i18nMessageResolver;
+
     static {
         CHARACTER_ENCODING_FILTER.setEncoding("UTF-8");
         CHARACTER_ENCODING_FILTER.setForceEncoding(true);

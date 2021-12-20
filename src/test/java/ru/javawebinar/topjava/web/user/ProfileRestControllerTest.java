@@ -69,7 +69,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     @Test
     @Transactional(propagation = Propagation.NEVER)
     void registerDuplicatedEmail() throws Exception {
-        String expectedErrDetails = I18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
+        String expectedErrDetails = i18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
         UserTo newTo = new UserTo(null, "newName", user.getEmail(), "newPassword", 1500);
         perform(MockMvcRequestBuilders.post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -82,7 +82,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     @Test
     @Transactional(propagation = Propagation.NEVER)
     void updateDuplicatedEmail() throws Exception {
-        String expectedErrDetails = I18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
+        String expectedErrDetails = i18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
         UserTo updatedTo = new UserTo(null, "newName", admin.getEmail(), "newPassword", 1500);
         perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(user))

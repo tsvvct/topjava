@@ -102,7 +102,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
     void updateDuplicatedEmail() throws Exception {
         User updated = getUpdated();
         updated.setEmail(admin.getEmail());
-        String expectedErrDetails = I18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
+        String expectedErrDetails = i18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
         perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(admin))
@@ -117,7 +117,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
     void createDuplicatedEmail() throws Exception {
         User newUser = getNew();
         newUser.setEmail(user.getEmail());
-        String expectedErrDetails = I18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
+        String expectedErrDetails = i18nMessageResolver.getMessage(I18nMessageResolver.EXCEPTION_DUPLICATE_EMAIL);//"User with this email already exists";
         perform(MockMvcRequestBuilders.post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(admin))

@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.LocaleResolver;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.ErrorInfo;
 import ru.javawebinar.topjava.util.exception.ErrorType;
@@ -27,6 +29,21 @@ import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 @Order(Ordered.HIGHEST_PRECEDENCE + 5)
 public class ExceptionInfoHandler {
     private static Logger log = LoggerFactory.getLogger(ExceptionInfoHandler.class);
+
+    private static I18nMessageResolver i18nMessageResolver;
+
+    private static LocaleResolver localeResolver;
+
+    @Autowired
+    public void setLocaleResolver(I18nMessageResolver i18nMessageResolver) {
+        ExceptionInfoHandler.i18nMessageResolver = i18nMessageResolver;
+    }
+
+    @Autowired
+    public void setLocaleResolver(LocaleResolver localeResolver) {
+        ExceptionInfoHandler.localeResolver = localeResolver;
+    }
+
 
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -55,7 +72,7 @@ public class ExceptionInfoHandler {
     }
 
     //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
+    protected static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
         Throwable rootCause = ValidationUtil.getRootCause(e);
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
@@ -63,8 +80,23 @@ public class ExceptionInfoHandler {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
 
-        String details = I18nMessageResolver.resolveMessageFromError(req, e, rootCause);
+        String details = getErrMessageDetails(req, e, rootCause);
 
         return new ErrorInfo(req.getRequestURL(), errorType, details);
+    }
+
+    public static String getErrMessageDetails(HttpServletRequest req, Exception e, Throwable rootCause) {
+        String result;
+        if (e instanceof BindException) {
+            result = ValidationUtil.getErrorResponse(((BindException) e).getBindingResult()).getBody();
+        } else if (e instanceof DataIntegrityViolationException) {
+            result = rootCause.toString();
+            if (result != null) {
+                result = i18nMessageResolver.resolveI18nMessage(localeResolver.resolveLocale(req), result);
+            }
+        } else {
+            result = rootCause.getMessage();
+        }
+        return result;
     }
 }
