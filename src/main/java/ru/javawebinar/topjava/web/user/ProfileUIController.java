@@ -40,7 +40,7 @@ public class ProfileUIController extends AbstractUserController {
         return "profile";
     }
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register")
     public String saveRegister(@Valid UserTo userTo, BindingResult result, SessionStatus status, ModelMap model) {
         if (result.hasErrors()) {
             model.addAttribute("register", true);

@@ -63,7 +63,7 @@ public class ExceptionInfoHandler {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
 
-        String details = I18nMessageResolver.resolveMessageFromError(e, rootCause);
+        String details = I18nMessageResolver.resolveMessageFromError(req, e, rootCause);
 
         return new ErrorInfo(req.getRequestURL(), errorType, details);
     }
