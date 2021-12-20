@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ModelAndView defaultErrorHandler2(HttpServletRequest req, Exception e) throws Exception {
+    public ModelAndView dataIntegrityViolationErrorHandler(HttpServletRequest req, Exception e) throws Exception {
 
         log.error("Exception at request " + req.getRequestURL(), e);
         if (req.getRequestURL().toString().contains("topjava/profile")) {
