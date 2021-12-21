@@ -94,6 +94,42 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidName() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", "user@yandex.ru", "newPassword", 1500);
+        updatedTo.setName("");
+        updateWithNotValidData(JsonUtil.writeValue(updatedTo), REST_URL, user,
+                "не должно быть пустым", "размер должен находиться в диапазоне");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidEmail() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", "user@yandex.ru", "newPassword", 1500);
+        updatedTo.setEmail("");
+        updateWithNotValidData(JsonUtil.writeValue(updatedTo), REST_URL, user,
+                "не должно быть пустым");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidPassword() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", "user@yandex.ru", "newPassword", 1500);
+        updatedTo.setPassword("");
+        updateWithNotValidData(JsonUtil.writeValue(updatedTo), REST_URL, user,
+                "не должно быть пустым", "размер должен находиться в диапазоне");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidCaloriesPerDay() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", "user@yandex.ru", "newPassword", 1500);
+        updatedTo.setCaloriesPerDay(0);
+        updateWithNotValidData(JsonUtil.writeValue(updatedTo), REST_URL, user,
+                "должно находиться в диапазоне");
+    }
+
+    @Test
     void update() throws Exception {
         UserTo updatedTo = new UserTo(null, "newName", "user@yandex.ru", "newPassword", 1500);
         perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)

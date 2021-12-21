@@ -127,6 +127,82 @@ class AdminRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createNotValidName() throws Exception {
+        User newUser = getNew();
+        newUser.setName("");
+        createWithNotValidData(jsonWithPassword(newUser, newUser.getPassword()), REST_URL, admin,
+                "не должно быть пустым");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createNotValidEmail() throws Exception {
+        User newUser = getNew();
+        newUser.setEmail("");
+        createWithNotValidData(jsonWithPassword(newUser, newUser.getPassword()), REST_URL, admin,
+                "не должно быть пустым");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createNotValidPassword() throws Exception {
+        User newUser = getNew();
+        newUser.setPassword("");
+        createWithNotValidData(jsonWithPassword(newUser, newUser.getPassword()), REST_URL, admin,
+                "не должно быть пустым");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createNotValidCaloriesPerDay() throws Exception {
+        User newUser = getNew();
+        newUser.setCaloriesPerDay(0);
+        createWithNotValidData(jsonWithPassword(newUser, newUser.getPassword()), REST_URL, admin,
+                "должно находиться в диапазоне");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidName() throws Exception {
+        User updated = getUpdated();
+//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+        updated.setName("");
+        updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
+                "не должно быть пустым", "размер должен находиться в диапазоне");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidEmail() throws Exception {
+        User updated = getUpdated();
+//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+        updated.setEmail("");
+        updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
+                "не должно быть пустым");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidPassword() throws Exception {
+        User updated = getUpdated();
+//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+        updated.setPassword("");
+        updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
+                "не должно быть пустым", "размер должен находиться в диапазоне");
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateNotValidCaloriesPerDay() throws Exception {
+        User updated = getUpdated();
+//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+        updated.setCaloriesPerDay(0);
+        updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
+                "должно находиться в диапазоне");
+    }
+
+    @Test
     void createWithLocation() throws Exception {
         User newUser = getNew();
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)

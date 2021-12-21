@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +23,9 @@ import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
@@ -35,7 +39,7 @@ public class ExceptionInfoHandler {
     private static LocaleResolver localeResolver;
 
     @Autowired
-    public void setLocaleResolver(I18nMessageResolver i18nMessageResolver) {
+    public void setI18nMessageResolver(I18nMessageResolver i18nMessageResolver) {
         ExceptionInfoHandler.i18nMessageResolver = i18nMessageResolver;
     }
 
@@ -43,7 +47,6 @@ public class ExceptionInfoHandler {
     public void setLocaleResolver(LocaleResolver localeResolver) {
         ExceptionInfoHandler.localeResolver = localeResolver;
     }
-
 
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -55,11 +58,34 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.CONFLICT)  // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
-        return logAndGetErrorInfo(req, e, true, DATA_ERROR);
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        return logAndGetErrorInfo(req, e, true, DATA_ERROR,
+                i18nMessageResolver.resolveI18nMessage(localeResolver.resolveLocale(req), rootCause.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({BindException.class, IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class,
+    @ExceptionHandler(BindException.class)
+    public List<ErrorInfo> bindException(HttpServletRequest req, Exception e) {
+        List<FieldError> errors = ((BindException) e).getBindingResult().getFieldErrors();
+        List<ErrorInfo> result = new ArrayList<>();
+        for (FieldError err : errors) {
+            String objName = (err.getObjectName().equalsIgnoreCase("userto")) ? "user" : err.getObjectName();
+            String msg = "[" + i18nMessageResolver.getMessage(objName + "." + err.getField(),
+                    localeResolver.resolveLocale(req)) + "]: " + err.getDefaultMessage();
+            result.add(logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, msg));
+        }
+        return result;
+//        List<String> msgList = new ArrayList<>();
+//        for (FieldError err : errors) {
+//            String objName = (err.getObjectName().equalsIgnoreCase("userto")) ? "user" : err.getObjectName();
+//            msgList.add("[" + i18nMessageResolver.getMessage(objName + "." + err.getField(),
+//                    localeResolver.resolveLocale(req)) + "]: " + err.getDefaultMessage());
+//        }
+//        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, msgList.toArray(new String[]{}));
+    }
+
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
+    @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class,
             HttpMessageNotReadableException.class})
     public ErrorInfo illegalRequestDataError(HttpServletRequest req, Exception e) {
         return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
@@ -72,7 +98,7 @@ public class ExceptionInfoHandler {
     }
 
     //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
-    protected static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
+    protected static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType, String... details) {
         Throwable rootCause = ValidationUtil.getRootCause(e);
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
@@ -80,23 +106,7 @@ public class ExceptionInfoHandler {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
 
-        String details = getErrMessageDetails(req, e, rootCause);
-
-        return new ErrorInfo(req.getRequestURL(), errorType, details);
-    }
-
-    public static String getErrMessageDetails(HttpServletRequest req, Exception e, Throwable rootCause) {
-        String result;
-        if (e instanceof BindException) {
-            result = ValidationUtil.getErrorResponse(((BindException) e).getBindingResult()).getBody();
-        } else if (e instanceof DataIntegrityViolationException) {
-            result = rootCause.toString();
-            if (result != null) {
-                result = i18nMessageResolver.resolveI18nMessage(localeResolver.resolveLocale(req), result);
-            }
-        } else {
-            result = rootCause.getMessage();
-        }
-        return result;
+        return new ErrorInfo(req.getRequestURL(), errorType,
+                Arrays.stream(details).reduce((s1, s2) -> (s1 + "<br>" + s2)).orElse(rootCause.getMessage()));
     }
 }
