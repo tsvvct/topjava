@@ -24,7 +24,6 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
@@ -65,23 +64,24 @@ public class ExceptionInfoHandler {
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
     @ExceptionHandler(BindException.class)
-    public List<ErrorInfo> bindException(HttpServletRequest req, Exception e) {
+    public ErrorInfo bindException(HttpServletRequest req, Exception e) {
         List<FieldError> errors = ((BindException) e).getBindingResult().getFieldErrors();
-        List<ErrorInfo> result = new ArrayList<>();
+        List<String> msgList = new ArrayList<>();
         for (FieldError err : errors) {
             String objName = (err.getObjectName().equalsIgnoreCase("userto")) ? "user" : err.getObjectName();
-            String msg = "[" + i18nMessageResolver.getMessage(objName + "." + err.getField(),
-                    localeResolver.resolveLocale(req)) + "]: " + err.getDefaultMessage();
-            result.add(logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, msg));
+            msgList.add("[" + i18nMessageResolver.getMessage(objName + "." + err.getField(),
+                    localeResolver.resolveLocale(req)) + "]: " + err.getDefaultMessage());
         }
-        return result;
-//        List<String> msgList = new ArrayList<>();
+        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, msgList.toArray(new String[]{}));
+//        List<ErrorInfo> result = new ArrayList<>();
 //        for (FieldError err : errors) {
 //            String objName = (err.getObjectName().equalsIgnoreCase("userto")) ? "user" : err.getObjectName();
-//            msgList.add("[" + i18nMessageResolver.getMessage(objName + "." + err.getField(),
-//                    localeResolver.resolveLocale(req)) + "]: " + err.getDefaultMessage());
+//            String msg = "[" + i18nMessageResolver.getMessage(objName + "." + err.getField(),
+//                    localeResolver.resolveLocale(req)) + "]: " + err.getDefaultMessage();
+//            result.add(logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, msg));
 //        }
-//        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, msgList.toArray(new String[]{}));
+//        return result;
+
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
@@ -107,6 +107,6 @@ public class ExceptionInfoHandler {
         }
 
         return new ErrorInfo(req.getRequestURL(), errorType,
-                Arrays.stream(details).reduce((s1, s2) -> (s1 + "<br>" + s2)).orElse(rootCause.getMessage()));
+                (details.length == 0) ? new String[]{rootCause.getMessage()} : details);
     }
 }

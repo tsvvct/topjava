@@ -121,6 +121,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
     void createWithNotValidDateTime() throws Exception {
         Meal newMeal = getNew();
         newMeal.setDateTime(null);
@@ -128,6 +129,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
     void createWithNotValidDescription() throws Exception {
         Meal newMeal = getNew();
         newMeal.setDescription("");
@@ -135,6 +137,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
     void createWithNotValidCalories() throws Exception {
         Meal newMeal = getNew();
         newMeal.setCalories(null);

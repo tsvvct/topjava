@@ -166,7 +166,6 @@ class AdminRestControllerTest extends AbstractControllerTest {
     @Transactional(propagation = Propagation.NEVER)
     void updateNotValidName() throws Exception {
         User updated = getUpdated();
-//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
         updated.setName("");
         updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
                 "не должно быть пустым", "размер должен находиться в диапазоне");
@@ -176,7 +175,6 @@ class AdminRestControllerTest extends AbstractControllerTest {
     @Transactional(propagation = Propagation.NEVER)
     void updateNotValidEmail() throws Exception {
         User updated = getUpdated();
-//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
         updated.setEmail("");
         updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
                 "не должно быть пустым");
@@ -186,7 +184,6 @@ class AdminRestControllerTest extends AbstractControllerTest {
     @Transactional(propagation = Propagation.NEVER)
     void updateNotValidPassword() throws Exception {
         User updated = getUpdated();
-//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
         updated.setPassword("");
         updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
                 "не должно быть пустым", "размер должен находиться в диапазоне");
@@ -196,7 +193,6 @@ class AdminRestControllerTest extends AbstractControllerTest {
     @Transactional(propagation = Propagation.NEVER)
     void updateNotValidCaloriesPerDay() throws Exception {
         User updated = getUpdated();
-//        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
         updated.setCaloriesPerDay(0);
         updateWithNotValidData(jsonWithPassword(updated, updated.getPassword()), REST_URL + USER_ID, admin,
                 "должно находиться в диапазоне");
